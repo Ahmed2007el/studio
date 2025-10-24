@@ -16,14 +16,12 @@ import {
   BookOpen,
   ClipboardList,
   DraftingCompass,
-  View,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProjectAnalysis from './project-analysis';
 import ConceptualDesign from './conceptual-design';
 import StructuralSimulation from './structural-simulation';
 import EducationalSupport from './educational-support';
-import ThreeDViewer from './three-d-viewer';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export default function MainDashboard() {
@@ -36,7 +34,7 @@ export default function MainDashboard() {
 
   return (
     <Tabs defaultValue="educational-support">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
         <TabsTrigger value="educational-support">
           <BookOpen />
           الدعم التعليمي
@@ -44,10 +42,6 @@ export default function MainDashboard() {
         <TabsTrigger value="project-analysis">
           <ClipboardList />
           تحليل المشروع
-        </TabsTrigger>
-        <TabsTrigger value="3d-viewer">
-          <View />
-          عارض ثلاثي الأبعاد
         </TabsTrigger>
         <TabsTrigger value="conceptual-design" disabled={!projectAnalysis}>
           <DraftingCompass />
@@ -70,9 +64,6 @@ export default function MainDashboard() {
           }}
           initialData={projectAnalysis}
         />
-      </TabsContent>
-       <TabsContent value="3d-viewer">
-        <ThreeDViewer />
       </TabsContent>
       <TabsContent value="conceptual-design">
         {projectAnalysis ? (
