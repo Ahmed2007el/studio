@@ -14,8 +14,8 @@ export default function Home() {
           </h1>
         </div>
       </header>
-      <main className="flex flex-1 flex-col items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
+      <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <div className="w-full max-w-7xl mx-auto">
           <MainDashboard />
         </div>
       </main>

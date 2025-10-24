@@ -6,7 +6,6 @@ import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import {
   AlertCircle,
-  MessageSquare,
 } from 'lucide-react';
 import {
   Card,
@@ -23,7 +22,6 @@ import {
   ListChecks,
   TriangleAlert,
 } from 'lucide-react';
-import { Button } from '../ui/button';
 import EngineeringAssistant from './engineering-assistant';
 
 export type AnalysisStep =
@@ -41,6 +39,7 @@ export default function MainDashboard() {
   const [projectAnalysis, setProjectAnalysis] = useState<
     | (Partial<SuggestStructuralSystemAndCodesOutput> & {
         projectDescription: string;
+        projectLocation: string;
       })
     | null
   >(null);
@@ -49,7 +48,6 @@ export default function MainDashboard() {
     null
   );
   const [error, setError] = useState<string | null>(null);
-  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   const handleAnalysisUpdate = (
     data: Partial<SuggestStructuralSystemAndCodesOutput>
@@ -58,6 +56,7 @@ export default function MainDashboard() {
       ...(prev as object),
       ...data,
       projectDescription: prev?.projectDescription || '',
+      projectLocation: prev?.projectLocation || '',
     }));
   };
 
@@ -121,26 +120,29 @@ export default function MainDashboard() {
 
   return (
     <div className="w-full space-y-8 relative">
-      <ProjectAnalysis
-        onAnalysisStart={(description) => {
-          resetState();
-          setProjectAnalysis({ projectDescription: description });
-          setAnalysisStatus({
-            structuralSystem: 'loading',
-            buildingCodes: 'pending',
-            executionMethod: 'pending',
-            potentialChallenges: 'pending',
-            keyFocusAreas: 'pending',
-          });
-        }}
-        onAnalysisUpdate={handleAnalysisUpdate}
-        onStatusUpdate={handleStatusUpdate}
-        onError={(e) => setError(e)}
-        isAnalyzing={
-          !!analysisStatus &&
-          Object.values(analysisStatus).some((s) => s !== 'complete')
-        }
-      />
+      {!isAnalysisComplete && (
+         <ProjectAnalysis
+         onAnalysisStart={(description, location) => {
+           resetState();
+           setProjectAnalysis({ projectDescription: description, projectLocation: location });
+           setAnalysisStatus({
+             structuralSystem: 'loading',
+             buildingCodes: 'pending',
+             executionMethod: 'pending',
+             potentialChallenges: 'pending',
+             keyFocusAreas: 'pending',
+           });
+         }}
+         onAnalysisUpdate={handleAnalysisUpdate}
+         onStatusUpdate={handleStatusUpdate}
+         onError={(e) => setError(e)}
+         isAnalyzing={
+           !!analysisStatus &&
+           !isAnalysisComplete
+         }
+       />
+      )}
+     
 
       {error && (
         <Alert variant="destructive">
@@ -150,7 +152,7 @@ export default function MainDashboard() {
         </Alert>
       )}
 
-      {analysisStatus && !projectAnalysis?.suggestedStructuralSystem && (
+      {analysisStatus && !isAnalysisComplete && (
         <Card>
           <CardHeader>
             <CardTitle>جاري التحليل...</CardTitle>
@@ -179,72 +181,63 @@ export default function MainDashboard() {
         </Card>
       )}
 
-      {projectAnalysis && projectAnalysis.suggestedStructuralSystem && (
-        <Card className="bg-card">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl">نتائج التحليل</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {projectAnalysis.suggestedStructuralSystem && (
-              <ResultItem
-                icon={<GanttChartSquare />}
-                title="النظام الإنشائي المقترح"
-                content={projectAnalysis.suggestedStructuralSystem}
-              />
-            )}
-            {projectAnalysis.applicableBuildingCodes && (
-              <ResultItem
-                icon={<ListChecks />}
-                title="أكواد البناء المطبقة"
-                content={projectAnalysis.applicableBuildingCodes}
-              />
-            )}
-            {projectAnalysis.executionMethod && (
-              <ResultItem
-                icon={<HardHat />}
-                title="طريقة التنفيذ المثلى"
-                content={projectAnalysis.executionMethod}
-              />
-            )}
-            <div className="grid gap-6 md:grid-cols-2">
-              {projectAnalysis.potentialChallenges && (
-                <ResultItem
-                  icon={<TriangleAlert />}
-                  title="التحديات المحتملة"
-                  content={projectAnalysis.potentialChallenges}
-                  isSubItem
-                />
-              )}
-              {projectAnalysis.keyFocusAreas && (
-                <ResultItem
-                  icon={<ListChecks />}
-                  title="نقاط التركيز الأساسية"
-                  content={projectAnalysis.keyFocusAreas}
-                  isSubItem
-                />
-              )}
+      {isAnalysisComplete && projectAnalysis && (
+         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="lg:col-span-3 space-y-6">
+                <Card className="bg-card">
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl">نتائج التحليل</CardTitle>
+                    <CardDescription>{projectAnalysis.projectDescription}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {projectAnalysis.suggestedStructuralSystem && (
+                    <ResultItem
+                        icon={<GanttChartSquare />}
+                        title="النظام الإنشائي المقترح"
+                        content={projectAnalysis.suggestedStructuralSystem}
+                    />
+                    )}
+                    {projectAnalysis.applicableBuildingCodes && (
+                    <ResultItem
+                        icon={<ListChecks />}
+                        title="أكواد البناء المطبقة"
+                        content={projectAnalysis.applicableBuildingCodes}
+                    />
+                    )}
+                    {projectAnalysis.executionMethod && (
+                    <ResultItem
+                        icon={<HardHat />}
+                        title="طريقة التنفيذ المثلى"
+                        content={projectAnalysis.executionMethod}
+                    />
+                    )}
+                    <div className="grid gap-6 md:grid-cols-2">
+                    {projectAnalysis.potentialChallenges && (
+                        <ResultItem
+                        icon={<TriangleAlert />}
+                        title="التحديات المحتملة"
+                        content={projectAnalysis.potentialChallenges}
+                        isSubItem
+                        />
+                    )}
+                    {projectAnalysis.keyFocusAreas && (
+                        <ResultItem
+                        icon={<ListChecks />}
+                        title="نقاط التركيز الأساسية"
+                        content={projectAnalysis.keyFocusAreas}
+                        isSubItem
+                        />
+                    )}
+                    </div>
+                </CardContent>
+                </Card>
             </div>
-          </CardContent>
-        </Card>
+            <div className="lg:col-span-2">
+                <EngineeringAssistant projectContext={projectAnalysis} />
+            </div>
+        </div>
       )}
 
-      {isAnalysisComplete && (
-        <>
-          <Button
-            onClick={() => setIsAssistantOpen(true)}
-            className="fixed bottom-8 left-8 h-16 w-16 rounded-full shadow-lg"
-            size="icon"
-          >
-            <MessageSquare className="h-8 w-8" />
-            <span className="sr-only">اسأل المهندس المساعد</span>
-          </Button>
-          <EngineeringAssistant
-            open={isAssistantOpen}
-            onOpenChange={setIsAssistantOpen}
-            projectContext={projectAnalysis}
-          />
-        </>
-      )}
     </div>
   );
 }
@@ -280,13 +273,13 @@ function ResultItem({
             {content.split('\n').map((paragraph, index) => {
                // Check if the paragraph is a list item
                if (paragraph.match(/^\d+\.\s/)) {
-                 return <p key={index}>{paragraph}</p>;
+                 return <p key={index} className='mb-2'>{paragraph}</p>;
                }
                // Check for sub-bullets like a), b) etc. or -
                if (paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-z]\)\s/)) {
-                 return <p key={index} className="ml-4">{paragraph}</p>;
+                 return <p key={index} className="ml-4 mb-1">{paragraph}</p>;
                }
-               return <p key={index}>{paragraph}</p>;
+               return <p key={index} className='mb-2'>{paragraph}</p>;
             })}
           </div>
         </div>

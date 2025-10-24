@@ -1,22 +1,16 @@
 'use client';
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import {
   chatWithEngineeringAssistant,
   type EngineeringAssistantInput,
 } from '@/ai/flows/engineering-assistant';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
 import { Loader2, Sparkles, User } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 
 interface Message {
   role: 'user' | 'model';
@@ -24,19 +18,26 @@ interface Message {
 }
 
 interface EngineeringAssistantProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   projectContext: any;
 }
 
 export default function EngineeringAssistant({
-  open,
-  onOpenChange,
   projectContext,
 }: EngineeringAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+            top: scrollAreaRef.current.scrollHeight,
+            behavior: 'smooth',
+        });
+    }
+  }, [messages]);
+
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -72,19 +73,18 @@ export default function EngineeringAssistant({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-2xl flex flex-col">
-        <SheetHeader>
-          <SheetTitle className="font-headline text-2xl">
+    <Card className="flex flex-col h-[calc(100vh-12rem)]">
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl">
             المهندس المساعد
-          </SheetTitle>
-          <SheetDescription>
+          </CardTitle>
+          <CardDescription>
             اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="p-4 space-y-6">
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 overflow-hidden p-4">
+          <ScrollArea className="h-full" ref={scrollAreaRef}>
+            <div className="space-y-6 pr-4">
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -131,22 +131,22 @@ export default function EngineeringAssistant({
                )}
             </div>
           </ScrollArea>
-        </div>
-        <div className="p-4 border-t">
-          <div className="flex gap-2">
+        </CardContent>
+        <CardFooter className="p-4 border-t">
+          <div className="flex gap-2 w-full">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="اكتب سؤالك هنا..."
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               disabled={loading}
+              className="flex-1"
             />
             <Button onClick={handleSend} disabled={loading}>
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال'}
             </Button>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </CardFooter>
+    </Card>
   );
 }
