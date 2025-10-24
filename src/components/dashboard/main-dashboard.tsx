@@ -286,7 +286,7 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-base dark:prose-invert max-w-none text-muted-foreground text-justify`}
+             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground text-justify`}
            >
              {content.split('\n').map((paragraph, index) => {
                 const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
@@ -302,7 +302,7 @@ function ResultItem({
             <ul className="space-y-3 mt-2 list-none p-0">
                 {references.map((ref, index) => (
                     <li key={index} className="text-base">
-                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent hover:underline">
+                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-400 hover:underline">
                           {ref.title}
                         </a>
                         <span className="text-muted-foreground text-sm"> by {ref.authors}</span>
