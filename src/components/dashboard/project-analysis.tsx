@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 const FormSchema = z.object({
   projectDescription: z
     .string()
-    .min(5, 'يرجى تقديم وصف للمشروع.'),
+    .min(5, 'يرجى تقديم وصف موجز للمشروع.'),
   projectLocation: z
     .string()
     .min(3, 'يرجى تحديد موقع المشروع.'),
@@ -82,7 +82,7 @@ export default function ProjectAnalysis({
     <Card>
       <CardHeader>
         <CardDescription>
-        أعط فكرة عن مشروعك للحصول على اقتراحات للأنظمة الإنشائية وأكواد البناء.
+        أدخل فكرة عامة عن مشروعك للحصول على تحليل مبدئي للأنظمة الإنشائية، أكواد البناء، وخطط التنفيذ.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -96,14 +96,11 @@ export default function ProjectAnalysis({
                   <FormLabel>وصف المشروع</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="مثال: مبنى سكني من 5 طوابق..."
-                      rows={5}
+                      placeholder="مثال: مبنى سكني من 5 طوابق مع قبو..."
+                      rows={4}
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                  قدم وصفاً عاماً للمشروع ومكوناته.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -115,11 +112,8 @@ export default function ProjectAnalysis({
                 <FormItem>
                   <FormLabel>موقع المشروع</FormLabel>
                   <FormControl>
-                    <Input placeholder="مثال: دبي، الإمارات" {...field} />
+                    <Input placeholder="مثال: الرياض، السعودية" {...field} />
                   </FormControl>
-                  <FormDescription>
-                  اذكر المدينة والدولة.
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -137,50 +131,50 @@ export default function ProjectAnalysis({
       {initialData && (
         <div className="p-6 pt-0">
             <h3 className="mb-4 text-lg font-medium font-headline">نتائج التحليل</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">النظام الإنشائي المقترح</CardTitle>
-                        <Building className="w-4 h-4 text-muted-foreground" />
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                        <Building className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-base font-semibold">النظام الإنشائي المقترح</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-base font-semibold">{initialData.suggestedStructuralSystem}</p>
+                        <p className="text-sm text-muted-foreground">{initialData.suggestedStructuralSystem}</p>
                     </CardContent>
                 </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">أكواد البناء المطبقة</CardTitle>
-                        <Landmark className="w-4 h-4 text-muted-foreground" />
+                 <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                        <Landmark className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-base font-semibold">أكواد البناء المطبقة</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-base font-semibold">{initialData.applicableBuildingCodes}</p>
+                        <p className="text-sm text-muted-foreground">{initialData.applicableBuildingCodes}</p>
                     </CardContent>
                 </Card>
                 <Card className="md:col-span-2">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">طريقة التنفيذ المثلى</CardTitle>
-                        <Construction className="w-4 h-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                        <Construction className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-base font-semibold">طريقة التنفيذ المثلى</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-base font-semibold">{initialData.executionMethod}</p>
+                        <p className="text-sm text-muted-foreground">{initialData.executionMethod}</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">التحديات المحتملة</CardTitle>
-                        <AlertTriangle className="w-4 h-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                        <AlertTriangle className="w-5 h-5 text-destructive" />
+                        <CardTitle className="text-base font-semibold">التحديات المحتملة</CardTitle>
                     </CardHeader>
                     <CardContent>
-                         <p className="text-base font-semibold">{initialData.potentialChallenges}</p>
+                         <p className="text-sm text-muted-foreground">{initialData.potentialChallenges}</p>
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">نقاط التركيز الأساسية</CardTitle>
-                        <ListChecks className="w-4 h-4 text-muted-foreground" />
+                    <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                        <ListChecks className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-base font-semibold">نقاط التركيز الأساسية</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-base font-semibold">{initialData.keyFocusAreas}</p>
+                        <p className="text-sm text-muted-foreground">{initialData.keyFocusAreas}</p>
                     </CardContent>
                 </Card>
             </div>

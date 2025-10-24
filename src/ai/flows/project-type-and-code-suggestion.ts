@@ -33,17 +33,17 @@ const prompt = ai.definePrompt({
   name: 'suggestStructuralSystemAndCodesPrompt',
   input: {schema: SuggestStructuralSystemAndCodesInputSchema},
   output: {schema: SuggestStructuralSystemAndCodesOutputSchema},
-  prompt: `You are an expert civil engineer providing consultation. Based on the project description and location, provide a detailed analysis. Your response must be in Arabic.
+  prompt: `You are an expert civil engineering consultant providing a detailed analysis for a project. Your response must be in clear, well-structured Arabic.
 
 Project Description: {{{projectDescription}}}
 Project Location: {{{projectLocation}}}
 
-Provide the following:
-- Suggested Structural System: (Provide a detailed rationale for your choice, considering factors like building height, soil conditions if mentioned, material availability, and economic feasibility.)
-- Applicable Building Codes: (List all relevant national and international codes, including structural, seismic, wind, fire, and accessibility codes.)
-- Optimal Execution Method: (Describe the best construction methodology. For example, 'Fast-track construction using precast concrete' or 'Traditional cast-in-situ concrete'. Explain why.)
-- Potential Challenges & Mistakes: (List at least 3 potential challenges or common mistakes. For example, 'Inaccurate soil testing leading to foundation issues' or 'Poor concrete curing in hot weather'.)
-- Key Focus Areas: (List at least 3 critical points to focus on. For example, 'Waterproofing for the basement walls' or 'Coordination between structural and MEP drawings'.)
+Provide the following in detail:
+- Suggested Structural System: (Provide a detailed rationale for your choice, considering factors like building height, soil conditions if mentioned, material availability, and economic feasibility. Explain WHY this system is optimal.)
+- Applicable Building Codes: (List all relevant national and international codes, including structural, seismic, wind, fire, and accessibility codes. Explain the importance of the main code.)
+- Optimal Execution Method: (Describe the best construction methodology with justification. For example, 'Fast-track construction using precast concrete because...' or 'Traditional cast-in-situ concrete due to...'. Explain the steps.)
+- Potential Challenges & Mistakes: (List at least 3 potential challenges and common mistakes with brief explanations. For example, '1. Inaccurate soil testing leading to foundation issues. 2. Poor concrete curing in hot weather, which can reduce strength.')
+- Key Focus Areas: (List at least 3 critical points to focus on during design and construction. For example, '1. Waterproofing for the basement walls to prevent leakage. 2. Coordination between structural and MEP drawings to avoid conflicts.')
 `,
 });
 
