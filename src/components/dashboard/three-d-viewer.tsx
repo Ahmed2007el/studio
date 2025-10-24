@@ -105,10 +105,9 @@ export default function ThreeDViewer() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">3D Model Viewer</CardTitle>
+        <CardTitle className="font-headline">عارض نماذج ثلاثية الأبعاد</CardTitle>
         <CardDescription>
-          Interact with a 3D representation of the structure. This is a sample
-          model.
+          تفاعل مع تمثيل ثلاثي الأبعاد للهيكل. هذا نموذج تجريبي.
         </CardDescription>
       </CardHeader>
       <CardContent>

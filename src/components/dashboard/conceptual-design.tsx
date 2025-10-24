@@ -5,7 +5,6 @@ import {
   type GeneratePreliminaryDesignsOutput,
   type GeneratePreliminaryDesignsInput,
 } from '@/ai/flows/generate-preliminary-designs';
-import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,9 +44,11 @@ const FormSchema = z.object({
 type FormValues = z.infer<typeof FormSchema>;
 
 interface ConceptualDesignProps {
-  projectAnalysis: SuggestStructuralSystemAndCodesOutput & {
+  projectAnalysis: {
     projectDescription: string;
     projectLocation: string;
+    suggestedStructuralSystem: string;
+    applicableBuildingCodes: string;
   };
   onDesignComplete: (data: GeneratePreliminaryDesignsOutput) => void;
   initialData: GeneratePreliminaryDesignsOutput | null;
@@ -90,8 +91,8 @@ export default function ConceptualDesign({
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Design Generation Failed',
-        description: 'An error occurred while generating the design. Please try again.',
+        title: 'فشل إنشاء التصميم',
+        description: 'حدث خطأ أثناء إنشاء التصميم. يرجى المحاولة مرة أخرى.',
       });
     } finally {
       setLoading(false);
@@ -103,10 +104,9 @@ export default function ConceptualDesign({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Conceptual Design</CardTitle>
+        <CardTitle className="font-headline">التصميم المبدئي</CardTitle>
         <CardDescription>
-          Generate preliminary designs and load calculations based on the
-          selected building code.
+          أنشئ تصميمات أولية وحسابات أحمال بناءً على كود البناء المختار.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -117,20 +117,21 @@ export default function ConceptualDesign({
               name="buildingCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Building Code</FormLabel>
+                  <FormLabel>كود البناء</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    dir='rtl'
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a building code" />
+                        <SelectValue placeholder="اختر كود بناء" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="ACI">ACI (American Concrete Institute)</SelectItem>
-                      <SelectItem value="BS">BS (British Standards)</SelectItem>
-                      <SelectItem value="UPC">UPC (Uniform Plumbing Code)</SelectItem>
+                      <SelectItem value="ACI">ACI (المعهد الأمريكي للخرسانة)</SelectItem>
+                      <SelectItem value="BS">BS (المعايير البريطانية)</SelectItem>
+                      <SelectItem value="UPC">UPC (كود السباكة الموحد)</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -141,7 +142,7 @@ export default function ConceptualDesign({
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="animate-spin" />}
-              {loading ? 'Generating...' : 'Generate Design'}
+              {loading ? 'جاري الإنشاء...' : 'إنشاء التصميم'}
             </Button>
           </CardFooter>
         </form>
@@ -149,16 +150,16 @@ export default function ConceptualDesign({
 
       {(loading || designResults) && (
          <div className="p-6 pt-0">
-         <h3 className="mb-4 text-lg font-medium font-headline">Design & Load Results</h3>
+         <h3 className="mb-4 text-lg font-medium font-headline">نتائج التصميم والأحمال</h3>
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-           <ResultCard title="Structural System" value={designResults?.structuralSystemSuggestion} loading={loading} />
-           <ResultCard title="Column Cross-Section" value={designResults?.columnCrossSection} loading={loading} />
-           <ResultCard title="Beam Cross-Section" value={designResults?.beamCrossSection} loading={loading} />
-           <ResultCard title="Foundation Design" value={designResults?.foundationDesign} loading={loading} />
-           <ResultCard title="Dead Load" value={designResults?.deadLoad} loading={loading} />
-           <ResultCard title="Live Load" value={designResults?.liveLoad} loading={loading} />
-           <ResultCard title="Wind Load" value={designResults?.windLoad} loading={loading} />
-           <ResultCard title="Seismic Load" value={designResults?.seismicLoad} loading={loading} />
+           <ResultCard title="النظام الإنشائي" value={designResults?.structuralSystemSuggestion} loading={loading} />
+           <ResultCard title="مقطع العمود" value={designResults?.columnCrossSection} loading={loading} />
+           <ResultCard title="مقطع الجائز" value={designResults?.beamCrossSection} loading={loading} />
+           <ResultCard title="تصميم الأساس" value={designResults?.foundationDesign} loading={loading} />
+           <ResultCard title="الحمل الميت" value={designResults?.deadLoad} loading={loading} />
+           <ResultCard title="الحمل الحي" value={designResults?.liveLoad} loading={loading} />
+           <ResultCard title="حمل الرياح" value={designResults?.windLoad} loading={loading} />
+           <ResultCard title="الحمل الزلزالي" value={designResults?.seismicLoad} loading={loading} />
          </div>
        </div>
       )}

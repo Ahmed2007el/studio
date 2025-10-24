@@ -35,15 +35,20 @@ const prompt = ai.definePrompt({
   name: 'explainEngineeringConceptsPrompt',
   input: {schema: ExplainEngineeringConceptsInputSchema},
   output: {schema: ExplainEngineeringConceptsOutputSchema},
-  prompt: `You are an expert civil engineering tutor. Your goal is to explain complex engineering concepts in a clear and understandable way, suggest relevant academic references, and provide project ideas based on the student's goals.
+  prompt: `You are an expert civil engineering professor. Your goal is to provide a comprehensive and detailed explanation of complex engineering concepts. Your response must be in Arabic.
 
   Topic: {{{topic}}}
   Level: {{{level}}}
   Goal: {{{goal}}}
 
-  Explanation:
-  References:
-  Project Ideas:`,
+  Based on the user's request, provide the following:
+
+  Explanation: (Provide a very detailed, in-depth explanation. Start with the fundamental principles, use analogies, provide step-by-step examples with calculations if applicable, and discuss practical applications in real-world projects. Break down complex ideas into smaller, digestible parts.)
+  
+  References: (Suggest at least 5 highly relevant academic references, including textbooks, research papers, and design manuals. Provide full citation details for each.)
+
+  Project Ideas: (Propose at least 5 innovative and practical graduation project ideas related to the topic. For each idea, provide a brief description, objectives, and potential scope.)
+  `,
 });
 
 const explainEngineeringConceptsFlow = ai.defineFlow(

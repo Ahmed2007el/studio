@@ -34,10 +34,10 @@ import { useToast } from '@/hooks/use-toast';
 const FormSchema = z.object({
   projectDescription: z
     .string()
-    .min(50, 'Please provide a more detailed project description.'),
+    .min(50, 'يرجى تقديم وصف أكثر تفصيلاً للمشروع.'),
   projectLocation: z
     .string()
-    .min(3, 'Please specify the project location.'),
+    .min(3, 'يرجى تحديد موقع المشروع.'),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -70,8 +70,8 @@ export default function ProjectAnalysis({
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Analysis Failed',
-        description: 'An error occurred while analyzing the project. Please try again.',
+        title: 'فشل التحليل',
+        description: 'حدث خطأ أثناء تحليل المشروع. يرجى المحاولة مرة أخرى.',
       });
     } finally {
       setLoading(false);
@@ -81,10 +81,9 @@ export default function ProjectAnalysis({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Project Analysis</CardTitle>
+        <CardTitle className="font-headline">تحليل المشروع</CardTitle>
         <CardDescription>
-          Provide details about your project to get AI-powered suggestions for
-          structural systems and building codes.
+          قدّم تفاصيل حول مشروعك للحصول على اقتراحات مدعومة بالذكاء الاصطناعي للأنظمة الإنشائية وأكواد البناء.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -95,17 +94,16 @@ export default function ProjectAnalysis({
               name="projectDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Description</FormLabel>
+                  <FormLabel>وصف المشروع</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., A 10-story residential building with two basement levels, featuring a concrete frame and a glass facade..."
+                      placeholder="مثال: مبنى سكني مكون من 10 طوابق مع طابقين سفليين، يتميز بهيكل خرساني وواجهة زجاجية..."
                       rows={5}
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Describe the type of structure, dimensions, materials, and
-                    key features.
+                    صف نوع الهيكل، الأبعاد، المواد، والميزات الرئيسية.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -116,12 +114,12 @@ export default function ProjectAnalysis({
               name="projectLocation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Location</FormLabel>
+                  <FormLabel>موقع المشروع</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Dubai, UAE" {...field} />
+                    <Input placeholder="مثال: دبي، الإمارات العربية المتحدة" {...field} />
                   </FormControl>
                   <FormDescription>
-                    The city and country where the project is located.
+                    المدينة والدولة التي يقع فيها المشروع.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -131,7 +129,7 @@ export default function ProjectAnalysis({
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="animate-spin" />}
-              {loading ? 'Analyzing...' : 'Analyze Project'}
+              {loading ? 'جاري التحليل...' : 'تحليل المشروع'}
             </Button>
           </CardFooter>
         </form>
@@ -139,11 +137,11 @@ export default function ProjectAnalysis({
 
       {initialData && (
         <div className="p-6 pt-0">
-            <h3 className="mb-4 text-lg font-medium font-headline">Analysis Results</h3>
+            <h3 className="mb-4 text-lg font-medium font-headline">نتائج التحليل</h3>
             <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Suggested Structural System</CardTitle>
+                        <CardTitle className="text-sm font-medium">النظام الإنشائي المقترح</CardTitle>
                         <Building className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -152,7 +150,7 @@ export default function ProjectAnalysis({
                 </Card>
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Applicable Building Codes</CardTitle>
+                        <CardTitle className="text-sm font-medium">أكواد البناء المطبقة</CardTitle>
                         <Landmark className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>

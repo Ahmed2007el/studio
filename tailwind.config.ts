@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Inter', ...fontFamily.sans],
+        body: ['Tajawal', ...fontFamily.sans],
         headline: ['Space Grotesk', ...fontFamily.sans],
         code: ['Source Code Pro', ...fontFamily.mono],
       },

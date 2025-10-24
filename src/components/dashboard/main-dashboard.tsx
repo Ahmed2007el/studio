@@ -28,39 +28,46 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 
 export default function MainDashboard() {
   const [projectAnalysis, setProjectAnalysis] =
-    useState<SuggestStructuralSystemAndCodesOutput | null>(null);
+    useState<(SuggestStructuralSystemAndCodesOutput & {projectDescription: string; projectLocation: string}) | null>(null);
   const [conceptualDesign, setConceptualDesign] =
-    useState<GeneratePreliminaryDesignsOutput | null>(null);
+    useState<(GeneratePreliminaryDesignsOutput & {projectDescription: string}) | null>(null);
   const [simulationResult, setSimulationResult] =
     useState<SimulateStructuralAnalysisOutput | null>(null);
 
   return (
-    <Tabs defaultValue="project-analysis">
+    <Tabs defaultValue="educational-support">
       <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <TabsTrigger value="educational-support">
+          <BookOpen />
+          الدعم التعليمي
+        </TabsTrigger>
         <TabsTrigger value="project-analysis">
           <ClipboardList />
-          Project Analysis
+          تحليل المشروع
         </TabsTrigger>
         <TabsTrigger value="conceptual-design" disabled={!projectAnalysis}>
           <DraftingCompass />
-          Conceptual Design
+          التصميم المبدئي
         </TabsTrigger>
         <TabsTrigger value="structural-simulation" disabled={!conceptualDesign}>
           <Activity />
-          Structural Simulation
+          محاكاة إنشائية
         </TabsTrigger>
         <TabsTrigger value="3d-viewer">
           <View />
-          3D Viewer
-        </TabsTrigger>
-        <TabsTrigger value="educational-support">
-          <BookOpen />
-          Educational Support
+          عارض ثلاثي الأبعاد
         </TabsTrigger>
       </TabsList>
+      <TabsContent value="educational-support">
+        <EducationalSupport />
+      </TabsContent>
       <TabsContent value="project-analysis">
         <ProjectAnalysis
-          onAnalysisComplete={setProjectAnalysis}
+          onAnalysisComplete={(data) => {
+            const description = (document.querySelector('textarea[name="projectDescription"]') as HTMLTextAreaElement)?.value;
+            const location = (document.querySelector('input[name="projectLocation"]') as HTMLInputElement)?.value;
+            setProjectAnalysis({...data, projectDescription: description, projectLocation: location});
+          }}
           initialData={projectAnalysis}
         />
       </TabsContent>
@@ -68,13 +75,13 @@ export default function MainDashboard() {
         {projectAnalysis ? (
           <ConceptualDesign
             projectAnalysis={projectAnalysis}
-            onDesignComplete={setConceptualDesign}
+            onDesignComplete={(data) => setConceptualDesign({...data, projectDescription: projectAnalysis.projectDescription})}
             initialData={conceptualDesign}
           />
         ) : (
           <DisabledTabPlaceholder
-            title="Awaiting Project Analysis"
-            description="Please complete the 'Project Analysis' step to enable Conceptual Design."
+            title="في انتظار تحليل المشروع"
+            description="يرجى إكمال خطوة 'تحليل المشروع' لتفعيل التصميم المبدئي."
           />
         )}
       </TabsContent>
@@ -87,16 +94,13 @@ export default function MainDashboard() {
           />
         ) : (
           <DisabledTabPlaceholder
-            title="Awaiting Conceptual Design"
-            description="Please complete the 'Conceptual Design' step to enable Structural Simulation."
+            title="في انتظار التصميم المبدئي"
+            description="يرجى إكمال خطوة 'التصميم المبدئي' لتفعيل المحاكاة الإنشائية."
           />
         )}
       </TabsContent>
       <TabsContent value="3d-viewer">
         <ThreeDViewer />
-      </TabsContent>
-      <TabsContent value="educational-support">
-        <EducationalSupport />
       </TabsContent>
     </Tabs>
   );

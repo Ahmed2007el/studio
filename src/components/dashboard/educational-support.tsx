@@ -46,9 +46,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
 
 const FormSchema = z.object({
-  topic: z.string().min(5, 'Please specify a clear topic.'),
+  topic: z.string().min(5, 'يرجى تحديد موضوع واضح.'),
   level: z.enum(['beginner', 'intermediate', 'advanced']),
-  goal: z.string().min(10, 'Please describe your goal in more detail.'),
+  goal: z.string().min(10, 'يرجى وصف هدفك بمزيد من التفصيل.'),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -74,8 +74,8 @@ export default function EducationalSupport() {
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Request Failed',
-        description: 'An error occurred while fetching information. Please try again.',
+        title: 'فشل الطلب',
+        description: 'حدث خطأ أثناء جلب المعلومات. يرجى المحاولة مرة أخرى.',
       });
     } finally {
       setLoading(false);
@@ -85,10 +85,9 @@ export default function EducationalSupport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Educational Support</CardTitle>
+        <CardTitle className="font-headline">الدعم التعليمي</CardTitle>
         <CardDescription>
-          Ask about any civil engineering concept to get a detailed explanation,
-          references, and project ideas.
+          اسأل عن أي مفهوم في الهندسة المدنية للحصول على شرح مفصل ومراجع وأفكار لمشاريع.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -99,10 +98,10 @@ export default function EducationalSupport() {
               name="topic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Topic</FormLabel>
+                  <FormLabel>الموضوع</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Shear Force and Bending Moment"
+                      placeholder="مثال: قوى القص وعزوم الانحناء"
                       {...field}
                     />
                   </FormControl>
@@ -115,20 +114,21 @@ export default function EducationalSupport() {
               name="level"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Level of Detail</FormLabel>
+                  <FormLabel>مستوى التفصيل</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    dir="rtl"
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a level" />
+                        <SelectValue placeholder="اختر مستوى" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
+                      <SelectItem value="beginner">مبتدئ</SelectItem>
+                      <SelectItem value="intermediate">متوسط</SelectItem>
+                      <SelectItem value="advanced">متقدم</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -140,10 +140,10 @@ export default function EducationalSupport() {
               name="goal"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Goal/Question</FormLabel>
+                  <FormLabel>الهدف/السؤال</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., I want to understand how to draw SFD and BMD for a simply supported beam with a UDL."
+                      placeholder="مثال: أريد أن أفهم كيفية رسم مخططات قوى القص وعزوم الانحناء لجائز بسيط معرض لحمل موزع بانتظام."
                       {...field}
                     />
                   </FormControl>
@@ -155,7 +155,7 @@ export default function EducationalSupport() {
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="animate-spin" />}
-              {loading ? 'Thinking...' : 'Get Explanation'}
+              {loading ? 'جاري التفكير...' : 'الحصول على الشرح'}
             </Button>
           </CardFooter>
         </form>
@@ -163,7 +163,7 @@ export default function EducationalSupport() {
 
       {(loading || result) && (
         <div className="p-6 pt-0">
-          <h3 className="mb-4 text-lg font-medium font-headline">AI Tutor Response</h3>
+          <h3 className="mb-4 text-lg font-medium font-headline">إجابة المساعد الذكي</h3>
           {loading ? (
              <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
@@ -177,15 +177,15 @@ export default function EducationalSupport() {
             result && (
               <Accordion type="multiple" defaultValue={['explanation']} className="w-full">
                 <AccordionItem value="explanation">
-                  <AccordionTrigger className="font-headline">Explanation</AccordionTrigger>
+                  <AccordionTrigger className="font-headline">الشرح</AccordionTrigger>
                   <AccordionContent className="prose dark:prose-invert max-w-none text-base">
                     {result.explanation.split('\n').map((p, i) => <p key={i}>{p}</p>)}
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="references">
-                  <AccordionTrigger className="font-headline">Academic References</AccordionTrigger>
+                  <AccordionTrigger className="font-headline">المراجع الأكاديمية</AccordionTrigger>
                   <AccordionContent>
-                    <ul className="list-disc space-y-2 pl-5">
+                    <ul className="list-disc space-y-2 pr-5">
                       {result.references.map((ref, i) => (
                         <li key={i}>{ref}</li>
                       ))}
@@ -193,9 +193,9 @@ export default function EducationalSupport() {
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="project-ideas">
-                  <AccordionTrigger className="font-headline">Graduation Project Ideas</AccordionTrigger>
+                  <AccordionTrigger className="font-headline">أفكار لمشاريع التخرج</AccordionTrigger>
                   <AccordionContent>
-                    <ul className="list-disc space-y-2 pl-5">
+                    <ul className="list-disc space-y-2 pr-5">
                       {result.projectIdeas.map((idea, i) => (
                         <li key={i}>{idea}</li>
                       ))}

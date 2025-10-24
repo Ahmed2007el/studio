@@ -47,7 +47,7 @@ const prompt = ai.definePrompt({
   name: 'simulateStructuralAnalysisPrompt',
   input: { schema: SimulateStructuralAnalysisInputSchema },
   output: { schema: SimulateStructuralAnalysisOutputSchema },
-  prompt: `You are an advanced structural analysis software like ETABS. Based on the provided project overview, preliminary design, and load calculations, perform a simplified structural analysis.
+  prompt: `You are an advanced structural analysis software like ETABS, performing a simulation. Your response must be in Arabic.
 
   Project Details:
   - Description: {{projectDescription}}
@@ -58,8 +58,8 @@ const prompt = ai.definePrompt({
   - Loads: Dead: {{deadLoad}}, Live: {{liveLoad}}, Wind: {{windLoad}}, Seismic: {{seismicLoad}}
 
   Your Task:
-  1. Estimate the maximum bending moments (kNm), shear forces (kN), and axial forces (kN) for 8 key structural elements (a mix of beams and columns).
-  2. Provide a brief summary of the analysis, highlighting the most critical elements or forces.
+  1. Estimate the maximum bending moments (kNm), shear forces (kN), and axial forces (kN) for 8 key structural elements (a mix of beams and columns, e.g., 'جائز B-1', 'عمود C-4').
+  2. Provide a detailed summary of the analysis. The summary should interpret the results, highlight the most critical elements, explain why they are critical (e.g., 'Column C-3 carries the highest axial load due to its central location and tributary area'), and suggest potential design optimizations (e.g., 'Consider increasing the depth of beam B-5 to reduce deflection').
   
   Present the results in the required structured format. Ensure the values are realistic for a preliminary analysis.
   `,

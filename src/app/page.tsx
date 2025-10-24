@@ -8,7 +8,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <Building className="h-6 w-6 text-primary" />
           <h1 className="font-headline text-xl font-semibold">
-            Civil Engineering Assistant
+            مساعد الهندسة المدنية
           </h1>
         </div>
       </header>

@@ -54,18 +54,18 @@ const prompt = ai.definePrompt({
   name: 'generatePreliminaryDesignsPrompt',
   input: {schema: GeneratePreliminaryDesignsInputSchema},
   output: {schema: GeneratePreliminaryDesignsOutputSchema},
-  prompt: `You are an experienced structural engineer tasked with generating preliminary designs for a construction project.
+  prompt: `You are an experienced structural engineer tasked with generating detailed preliminary designs for a construction project. Your response must be in Arabic.
 
   Based on the following project description:
   {{projectDescription}}
 
   Considering the building code: {{buildingCode}} and the project location: {{location}}.
 
-  Provide the following information:
-  - A suggested structural system.
-  - Preliminary cross-section designs for columns and beams.
-  - A preliminary design for the foundations.
-  - Initial calculations for dead load, live load, wind load, and seismic load.
+  Provide the following information with detailed explanations and justifications:
+  - A suggested structural system: (Justify your choice based on efficiency, cost, and suitability for the location).
+  - Preliminary cross-section designs for columns and beams: (Provide specific dimensions, e.g., 'C1: 40x60cm', 'B1: 30x70cm', and mention typical reinforcement).
+  - A preliminary design for the foundations: (Suggest a foundation type like isolated footings, raft, or piles, and provide initial sizing).
+  - Initial calculations for dead load, live load, wind load, and seismic load: (Present the loads in kN/m^2 or kN, and briefly explain the assumptions made for each calculation).
 
   Ensure that the designs and calculations are consistent with the specified building code and location.
 `,

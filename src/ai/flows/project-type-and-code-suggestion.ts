@@ -30,13 +30,15 @@ const prompt = ai.definePrompt({
   name: 'suggestStructuralSystemAndCodesPrompt',
   input: {schema: SuggestStructuralSystemAndCodesInputSchema},
   output: {schema: SuggestStructuralSystemAndCodesOutputSchema},
-  prompt: `You are a civil engineer. Based on the project description and location, suggest the most suitable structural system and applicable building codes.
+  prompt: `You are an expert civil engineer providing consultation. Based on the project description and location, provide a detailed suggestion for the most suitable structural system and a comprehensive list of applicable building codes.
 
 Project Description: {{{projectDescription}}}
 Project Location: {{{projectLocation}}}
 
-Suggested Structural System: 
-Applicable Building Codes: `,
+Your response should be in Arabic.
+
+Suggested Structural System: (Provide a detailed rationale for your choice, considering factors like building height, soil conditions if mentioned, material availability, and economic feasibility.)
+Applicable Building Codes: (List all relevant national and international codes, including structural, seismic, wind, fire, and accessibility codes.)`,
 });
 
 const suggestStructuralSystemAndCodesFlow = ai.defineFlow(
