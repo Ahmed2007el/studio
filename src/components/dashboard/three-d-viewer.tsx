@@ -14,19 +14,18 @@ import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preli
 import { Button } from '../ui/button';
 import { RefreshCw } from 'lucide-react';
 
-// Helper function to parse dimensions like '40x60 cm' or '30x70 cm'
+// Helper function to parse dimensions like 'C1: 40x60 cm'
 function parseDimensions(dimString: string): { width: number; height: number } | null {
-  if (!dimString) return null;
-  // Match numbers like 40, 60, 30, 70 from strings '40x60', '30 x 70' etc.
-  const matches = dimString.match(/(\d+)\s*x\s*(\d+)/);
-  if (matches && matches.length === 3) {
-    // Convert cm to meters
-    const d1 = parseFloat(matches[1]) / 100;
-    const d2 = parseFloat(matches[2]) / 100;
-    return { width: d1, height: d2 };
+    if (!dimString) return null;
+    const matches = dimString.match(/(\d+)\s*x\s*(\d+)/);
+    if (matches && matches.length === 3) {
+      // Convert cm to meters
+      const d1 = parseFloat(matches[1]) / 100;
+      const d2 = parseFloat(matches[2]) / 100;
+      return { width: d1, height: d2 };
+    }
+    return null;
   }
-  return null;
-}
 
 interface ThreeDViewerProps {
   designData: GeneratePreliminaryDesignsOutput | null;
