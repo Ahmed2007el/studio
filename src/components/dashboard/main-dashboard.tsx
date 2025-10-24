@@ -115,12 +115,13 @@ export default function MainDashboard() {
     },
   ];
 
+  const isAnalyzing = !!analysisStatus && !Object.values(analysisStatus).every(s => s === 'complete');
   const isAnalysisComplete =
     !!analysisStatus && Object.values(analysisStatus).every((s) => s === 'complete');
 
   return (
     <div className="w-full space-y-8 relative">
-      {!isAnalysisComplete && (
+      {!isAnalyzing && (
          <ProjectAnalysis
          onAnalysisStart={(description, location) => {
            resetState();
@@ -136,10 +137,7 @@ export default function MainDashboard() {
          onAnalysisUpdate={handleAnalysisUpdate}
          onStatusUpdate={handleStatusUpdate}
          onError={(e) => setError(e)}
-         isAnalyzing={
-           !!analysisStatus &&
-           !isAnalysisComplete
-         }
+         isAnalyzing={isAnalyzing}
        />
       )}
      
@@ -152,7 +150,7 @@ export default function MainDashboard() {
         </Alert>
       )}
 
-      {analysisStatus && !isAnalysisComplete && (
+      {isAnalyzing && analysisStatus && (
         <Card>
           <CardHeader>
             <CardTitle>جاري التحليل...</CardTitle>
