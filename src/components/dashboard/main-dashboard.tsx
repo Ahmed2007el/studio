@@ -15,6 +15,11 @@ import {
   PlusCircle,
   Share2,
   TriangleAlert,
+  Cube,
+  FileText,
+  MessageCircle,
+  BrainCircuit,
+  GraduationCap
 } from 'lucide-react';
 import {
   Card,
@@ -36,6 +41,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preliminary-designs';
+import type { SimulateStructuralAnalysisOutput } from '@/ai/flows/simulate-structural-analysis';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ConceptualDesign from './conceptual-design';
+import StructuralSimulation from './structural-simulation';
+import ThreeDViewer from './three-d-viewer';
+import EducationalSupport from './educational-support';
+
 
 export type AnalysisStep =
   | 'structuralSystem'
@@ -54,6 +67,8 @@ export type ProjectAnalysisData = Partial<SuggestStructuralSystemAndCodesOutput>
   projectDescription: string;
   projectLocation: string;
   timestamp: string;
+  conceptualDesign: GeneratePreliminaryDesignsOutput | null;
+  structuralSimulation: SimulateStructuralAnalysisOutput | null;
 };
 
 export default function MainDashboard() {
@@ -81,9 +96,9 @@ export default function MainDashboard() {
       }
     } catch (e) {
       console.error("Failed to parse analysis history from localStorage", e);
-      // Handle corrupted data if necessary
       localStorage.removeItem('analysisHistory');
     }
+    setView('form');
   }, []);
 
   const saveHistory = (history: ProjectAnalysisData[]) => {
@@ -101,6 +116,8 @@ export default function MainDashboard() {
       projectDescription: description,
       projectLocation: location,
       timestamp: new Date().toISOString(),
+      conceptualDesign: null,
+      structuralSimulation: null
     };
     setCurrentAnalysis(newAnalysis);
     setAnalysisStatus({
@@ -159,6 +176,26 @@ export default function MainDashboard() {
     setError(null);
     setView('form');
   }
+
+  const handleDataUpdate = <T extends 'conceptualDesign' | 'structuralSimulation'>(
+    field: T,
+    data: ProjectAnalysisData[T]
+  ) => {
+    setCurrentAnalysis(prev => {
+        if (!prev) return null;
+        const updatedAnalysis = { ...prev, [field]: data };
+
+        const historyIndex = analysisHistory.findIndex(item => item.id === prev.id);
+        if (historyIndex !== -1) {
+            const updatedHistory = [...analysisHistory];
+            updatedHistory[historyIndex] = updatedAnalysis;
+            setAnalysisHistory(updatedHistory);
+            saveHistory(updatedHistory);
+        }
+        
+        return updatedAnalysis;
+    });
+  };
 
 
   const handleShare = async () => {
@@ -344,78 +381,127 @@ ${
         )}
 
         {view === 'results' && currentAnalysis && (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-3 space-y-6">
-              <Card className="bg-card">
-                <CardHeader className="flex flex-row items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="font-headline text-xl">
-                      نتائج التحليل
-                    </CardTitle>
-                    <CardDescription>
-                      {currentAnalysis.projectDescription}
-                    </CardDescription>
-                  </div>
-                  <Button variant="ghost" size="icon" onClick={handleShare}>
-                    <Share2 className="h-5 w-5" />
-                    <span className="sr-only">مشاركة</span>
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-6 !pt-0">
-                  {currentAnalysis.suggestedStructuralSystem && (
-                    <ResultItem
-                      icon={<GanttChartSquare />}
-                      title="النظام الإنشائي المقترح"
-                      content={currentAnalysis.suggestedStructuralSystem}
+            <Tabs defaultValue="analysis" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
+              <TabsTrigger value="design"><BrainCircuit className="mr-2"/> التصميم المبدئي</TabsTrigger>
+              <TabsTrigger value="simulation"><GanttChartSquare className="mr-2"/> المحاكاة الإنشائية</TabsTrigger>
+              <TabsTrigger value="viewer"><Cube className="mr-2"/> العارض ثلاثي الأبعاد</TabsTrigger>
+              <TabsTrigger value="assistant"><MessageCircle className="mr-2"/> المساعد الهندسي</TabsTrigger>
+            </TabsList>
+            <TabsContent value="analysis">
+                <Card className="bg-card mt-4">
+                    <CardHeader className="flex flex-row items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="font-headline text-xl">
+                          نتائج التحليل الأولي
+                        </CardTitle>
+                        <CardDescription>
+                          {currentAnalysis.projectDescription}
+                        </CardDescription>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={handleShare}>
+                        <Share2 className="h-5 w-5" />
+                        <span className="sr-only">مشاركة</span>
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-6 !pt-0">
+                      {currentAnalysis.suggestedStructuralSystem && (
+                        <ResultItem
+                          icon={<GanttChartSquare />}
+                          title="النظام الإنشائي المقترح"
+                          content={currentAnalysis.suggestedStructuralSystem}
+                        />
+                      )}
+                      {currentAnalysis.applicableBuildingCodes && (
+                        <ResultItem
+                          icon={<ListChecks />}
+                          title="أكواد البناء المطبقة"
+                          content={currentAnalysis.applicableBuildingCodes}
+                        />
+                      )}
+                      {currentAnalysis.executionMethod && (
+                        <ResultItem
+                          icon={<HardHat />}
+                          title="طريقة التنفيذ المثلى"
+                          content={currentAnalysis.executionMethod}
+                        />
+                      )}
+                      {currentAnalysis.academicReferences &&
+                        currentAnalysis.academicReferences.length > 0 && (
+                          <ResultItem
+                            icon={<BookMarked />}
+                            title="مراجع أكاديمية مقترحة"
+                            references={currentAnalysis.academicReferences}
+                          />
+                        )}
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {currentAnalysis.potentialChallenges && (
+                          <ResultItem
+                            icon={<TriangleAlert />}
+                            title="التحديات المحتملة"
+                            content={currentAnalysis.potentialChallenges}
+                            isSubItem
+                          />
+                        )}
+                        {currentAnalysis.keyFocusAreas && (
+                          <ResultItem
+                            icon={<ListChecks />}
+                            title="نقاط التركيز الأساسية"
+                            content={currentAnalysis.keyFocusAreas}
+                            isSubItem
+                          />
+                        )}
+                      </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="design">
+                {currentAnalysis.suggestedStructuralSystem && currentAnalysis.applicableBuildingCodes && (
+                    <ConceptualDesign 
+                        projectAnalysis={{
+                            projectDescription: currentAnalysis.projectDescription,
+                            projectLocation: currentAnalysis.projectLocation,
+                            suggestedStructuralSystem: currentAnalysis.suggestedStructuralSystem,
+                            applicableBuildingCodes: currentAnalysis.applicableBuildingCodes
+                        }}
+                        onDesignComplete={(data) => handleDataUpdate('conceptualDesign', data)}
+                        initialData={currentAnalysis.conceptualDesign}
                     />
-                  )}
-                  {currentAnalysis.applicableBuildingCodes && (
-                    <ResultItem
-                      icon={<ListChecks />}
-                      title="أكواد البناء المطبقة"
-                      content={currentAnalysis.applicableBuildingCodes}
+                )}
+            </TabsContent>
+            <TabsContent value="simulation">
+                {currentAnalysis.conceptualDesign ? (
+                    <StructuralSimulation 
+                        designData={{...currentAnalysis.conceptualDesign, projectDescription: currentAnalysis.projectDescription}}
+                        onSimulationComplete={(data) => handleDataUpdate('structuralSimulation', data)}
+                        initialData={currentAnalysis.structuralSimulation}
                     />
-                  )}
-                  {currentAnalysis.executionMethod && (
-                    <ResultItem
-                      icon={<HardHat />}
-                      title="طريقة التنفيذ المثلى"
-                      content={currentAnalysis.executionMethod}
-                    />
-                  )}
-                  {currentAnalysis.academicReferences &&
-                    currentAnalysis.academicReferences.length > 0 && (
-                      <ResultItem
-                        icon={<BookMarked />}
-                        title="مراجع أكاديمية مقترحة"
-                        references={currentAnalysis.academicReferences}
-                      />
-                    )}
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {currentAnalysis.potentialChallenges && (
-                      <ResultItem
-                        icon={<TriangleAlert />}
-                        title="التحديات المحتملة"
-                        content={currentAnalysis.potentialChallenges}
-                        isSubItem
-                      />
-                    )}
-                    {currentAnalysis.keyFocusAreas && (
-                      <ResultItem
-                        icon={<ListChecks />}
-                        title="نقاط التركيز الأساسية"
-                        content={currentAnalysis.keyFocusAreas}
-                        isSubItem
-                      />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="lg:col-span-2">
-              <EngineeringAssistant projectContext={currentAnalysis} />
-            </div>
-          </div>
+                ) : (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>المحاكاة الإنشائية</CardTitle>
+                            <CardDescription>
+                                يرجى إكمال خطوة "التصميم المبدئي" أولاً لتتمكن من تشغيل المحاكاة.
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                )}
+            </TabsContent>
+            <TabsContent value="viewer">
+                <ThreeDViewer />
+            </TabsContent>
+            <TabsContent value="assistant">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="lg:col-span-3">
+                        <EducationalSupport />
+                    </div>
+                    <div className="lg:col-span-2">
+                        <EngineeringAssistant projectContext={currentAnalysis} />
+                    </div>
+                </div>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </SidebarProvider>
@@ -459,9 +545,6 @@ function ResultItem({
           {content && (
             <div className="prose dark:prose-invert max-w-none text-muted-foreground">
               {content.split('\n').map((paragraph, index) => {
-                const isListItem = paragraph.match(
-                  /^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/
-                );
                 return (
                   <p
                     key={index}
