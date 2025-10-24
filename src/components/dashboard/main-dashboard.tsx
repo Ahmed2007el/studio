@@ -81,6 +81,7 @@ export default function MainDashboard() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('analysis');
   const [view, setView] = useState<'form' | 'analysis_progress' | 'results'>(
     'form'
   );
@@ -245,18 +246,6 @@ ${
     }
   };
 
-  const getStatusIcon = (status: 'pending' | 'loading' | 'complete') => {
-    switch (status) {
-      case 'pending':
-        return <CircleDashed className="h-5 w-5 text-muted-foreground" />;
-      case 'loading':
-        return (
-          <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" />
-        );
-      case 'complete':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    }
-  };
 
   const analysisSteps: {
     key: AnalysisStep;
@@ -301,10 +290,11 @@ ${
     return (
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
-            <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
                 <TabsTrigger value="design"><BrainCircuit className="mr-2"/> النمذجة والتصميم</TabsTrigger>
+                <TabsTrigger value="education"><GraduationCap className="mr-2"/> الدعم التعليمي</TabsTrigger>
             </TabsList>
             <TabsContent value="analysis">
                 <Card className="bg-card">
@@ -404,6 +394,9 @@ ${
                 )}
                 <ThreeDViewer />
             </TabsContent>
+             <TabsContent value="education">
+                <EducationalSupport />
+            </TabsContent>
             </Tabs>
         </div>
         <div className="lg:col-span-2 space-y-6">
@@ -481,7 +474,13 @@ ${
               <ul className="space-y-3">
                 {analysisSteps.map((step) => (
                   <li key={step.key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="text-primary">{analysisStatus[step.key] === 'complete' ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : analysisStatus[step.key] === 'loading' ? <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" /> : <CircleDashed className="h-5 w-5 text-muted-foreground" />}</div>
+                    <div>
+                      {analysisStatus[step.key] === 'complete' 
+                        ? <CheckCircle2 className="h-5 w-5 text-green-500" /> 
+                        : analysisStatus[step.key] === 'loading' 
+                          ? <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" /> 
+                          : <CircleDashed className="h-5 w-5 text-muted-foreground" />}
+                    </div>
                     <span
                       className={`font-medium ${
                         analysisStatus[step.key] === 'pending'
