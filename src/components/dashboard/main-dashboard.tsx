@@ -286,7 +286,7 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}
+             className={`prose prose-base dark:prose-invert max-w-none text-muted-foreground text-justify`}
            >
              {content.split('\n').map((paragraph, index) => {
                 // Check if the paragraph is a list item
@@ -300,12 +300,12 @@ function ResultItem({
           {references && (
             <ul className="space-y-3 mt-2">
                 {references.map((ref, index) => (
-                    <li key={index} className="text-sm">
+                    <li key={index} className="text-base">
                         <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
                           {ref.title}
                         </a>
                         <span className="text-muted-foreground"> by {ref.authors}</span>
-                        <p className="text-xs text-muted-foreground/80 mt-1">{ref.note}</p>
+                        <p className="text-sm text-muted-foreground/80 mt-1">{ref.note}</p>
                     </li>
                 ))}
             </ul>
