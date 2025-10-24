@@ -85,7 +85,6 @@ export default function EducationalSupport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline text-xl">الدعم التعليمي</CardTitle>
         <CardDescription>
           اسأل عن أي مفهوم في الهندسة المدنية للحصول على شرح مفصل ومراجع وأفكار لمشاريع.
         </CardDescription>
