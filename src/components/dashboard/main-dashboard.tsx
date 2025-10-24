@@ -15,11 +15,8 @@ import {
   PlusCircle,
   Share2,
   TriangleAlert,
-  Box,
   FileText,
-  MessageCircle,
   BrainCircuit,
-  GraduationCap
 } from 'lucide-react';
 import {
   Card,
@@ -47,7 +44,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ConceptualDesign from './conceptual-design';
 import StructuralSimulation from './structural-simulation';
 import ThreeDViewer from './three-d-viewer';
-import EducationalSupport from './educational-support';
 
 
 export type AnalysisStep =
@@ -291,10 +287,9 @@ ${
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
                 <TabsTrigger value="design"><BrainCircuit className="mr-2"/> النمذجة والتصميم</TabsTrigger>
-                <TabsTrigger value="education"><GraduationCap className="mr-2"/> الدعم التعليمي</TabsTrigger>
             </TabsList>
             <TabsContent value="analysis">
                 <Card className="bg-card">
@@ -393,9 +388,6 @@ ${
                     </Card>
                 )}
                 <ThreeDViewer />
-            </TabsContent>
-             <TabsContent value="education">
-                <EducationalSupport />
             </TabsContent>
             </Tabs>
         </div>
@@ -539,13 +531,13 @@ function ResultItem({
             {title}
           </h4>
           {content && (
-            <div className="prose dark:prose-invert max-w-none text-muted-foreground">
-              {content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-2 last:mb-0 text-right">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+             <div className="prose dark:prose-invert max-w-none text-muted-foreground">
+             {content.split('\n').map((paragraph, index) => (
+               <p key={index} className="mb-2 last:mb-0 text-right">
+                 {paragraph}
+               </p>
+             ))}
+           </div>
           )}
           {references && (
             <ul className="space-y-3 mt-2 list-none p-0 text-right">
