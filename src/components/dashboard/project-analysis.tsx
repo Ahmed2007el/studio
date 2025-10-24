@@ -64,59 +64,50 @@ export default function ProjectAnalysis({
     form.setValue('projectDescription', description);
   };
 
-  const runAnalysisStep = async (
-    description: string,
-    step: AnalysisStep,
-    currentStatus: AnalysisStatus,
-    currentData: Partial<SuggestStructuralSystemAndCodesOutput>
-  ): Promise<[Partial<SuggestStructuralSystemAndCodesOutput>, AnalysisStatus]> => {
-      
-    const result = await suggestStructuralSystemAndCodes({
-      projectDescription: description,
-      projectLocation: '', // Location is derived by AI if needed
-      analysisFocus: step,
-      context: currentData,
-    });
-    
-    const nextStatus = { ...currentStatus };
-    const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas', 'academicReferences'];
-    const currentIndex = steps.indexOf(step);
-    nextStatus[step] = 'complete';
-    if (currentIndex + 1 < steps.length) {
-      nextStatus[steps[currentIndex + 1]] = 'loading';
-    }
-    
-    return [{...currentData, ...result}, nextStatus];
-  };
-
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     onAnalysisStart(data.projectDescription, '');
-    let currentData: Partial<SuggestStructuralSystemAndCodesOutput> = {};
-    let currentStatus: AnalysisStatus = {
+    
+    const initialStatus: AnalysisStatus = {
         structuralSystem: 'loading',
+        buildingCodes: 'loading',
+        executionMethod: 'loading',
+        potentialChallenges: 'loading',
+        keyFocusAreas: 'loading',
+        academicReferences: 'loading'
+    };
+    onStatusUpdate(initialStatus);
+
+    try {
+      const result = await suggestStructuralSystemAndCodes({
+        projectDescription: data.projectDescription,
+        projectLocation: '', // Location is derived by AI if needed
+      });
+      
+      onAnalysisUpdate(result);
+
+      const finalStatus: AnalysisStatus = {
+        structuralSystem: 'complete',
+        buildingCodes: 'complete',
+        executionMethod: 'complete',
+        potentialChallenges: 'complete',
+        keyFocusAreas: 'complete',
+        academicReferences: 'complete'
+      };
+      onStatusUpdate(finalStatus);
+
+    } catch (error) {
+      console.error(error);
+      onError('حدث خطأ أثناء إنشاء التحليل. قد يكون السبب هو تجاوز حدود الاستخدام. يرجى المحاولة مرة أخرى لاحقًا.');
+      // Reset status on error
+      const errorStatus: AnalysisStatus = {
+        structuralSystem: 'pending',
         buildingCodes: 'pending',
         executionMethod: 'pending',
         potentialChallenges: 'pending',
         keyFocusAreas: 'pending',
         academicReferences: 'pending'
       };
-
-    try {
-      const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas', 'academicReferences'];
-
-      for (const step of steps) {
-        onStatusUpdate(currentStatus);
-        const [newData, nextStatus] = await runAnalysisStep(data.projectDescription, step, currentStatus, currentData);
-        currentData = newData;
-        currentStatus = nextStatus;
-        onAnalysisUpdate(newData);
-      }
-      onStatusUpdate(currentStatus);
-
-
-    } catch (error) {
-      console.error(error);
-      onError('حدث خطأ أثناء إنشاء التحليل. يرجى المحاولة مرة أخرى.');
+      onStatusUpdate(errorStatus);
     }
   };
 
