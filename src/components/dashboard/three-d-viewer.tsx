@@ -1,15 +1,18 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preliminary-designs';
+import { Button } from '../ui/button';
+import { RefreshCw } from 'lucide-react';
 
 // Helper function to parse dimensions like '40x60 cm' or '30x70 cm'
 function parseDimensions(dimString: string): { width: number; height: number } | null {
@@ -31,20 +34,38 @@ interface ThreeDViewerProps {
 
 export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [renderKey, setRenderKey] = useState(0);
 
   useEffect(() => {
-    if (!mountRef.current) return;
-
-    // --- CLEANUP ---
     const mount = mountRef.current;
-    let animationFrameId: number;
+    if (!mount) return;
+
     // Clean up previous renders before creating a new one
-    while (mount.firstChild) {
-      mount.removeChild(mount.firstChild);
-    }
+    let animationFrameId: number;
+    const cleanup = () => {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        if(mount) {
+            while (mount.firstChild) {
+                mount.removeChild(mount.firstChild);
+            }
+        }
+    };
+
+    cleanup();
     
     // If no design data, don't render the scene
     if (!designData) {
+        // Display the placeholder message again if needed
+        if (mount) {
+            const placeholder = document.createElement('div');
+            placeholder.className = "flex items-center justify-center h-full text-muted-foreground";
+            const p = document.createElement('p');
+            p.textContent = "يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.";
+            placeholder.appendChild(p);
+            mount.appendChild(placeholder);
+        }
         return;
     }
 
@@ -165,8 +186,8 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
 
     // --- CLEANUP FUNCTION ---
     return () => {
-      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      cleanup();
       if (controls) {
         controls.dispose();
       }
@@ -174,7 +195,12 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
         renderer.dispose();
       }
     };
-  }, [designData]); // Re-run effect when designData changes
+  }, [designData, renderKey]); // Re-run effect when designData or renderKey changes
+
+  const handleRefresh = () => {
+    setRenderKey(prevKey => prevKey + 1);
+  };
+
 
   return (
     <Card>
@@ -196,6 +222,14 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
         )}
         </div>
       </CardContent>
+      {designData && (
+        <CardFooter className="justify-end">
+            <Button onClick={handleRefresh}>
+                <RefreshCw className="ml-2 h-4 w-4" />
+                تحديث النموذج
+            </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
