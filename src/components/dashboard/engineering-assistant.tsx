@@ -1,15 +1,11 @@
 'use client';
 
-import {
-  chatWithEngineeringAssistant,
-  type EngineeringAssistantInput,
-} from '@/ai/flows/engineering-assistant';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, Sparkles, User, Volume2, PlayCircle, Mic } from 'lucide-react';
+import { Loader2, Sparkles, User, PlayCircle, Mic } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 
@@ -47,10 +43,13 @@ export default function EngineeringAssistant({
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollTo({
-            top: scrollAreaRef.current.scrollHeight,
-            behavior: 'smooth',
-        });
+        const viewport = scrollAreaRef.current.querySelector('div');
+        if (viewport) {
+            viewport.scrollTo({
+                top: viewport.scrollHeight,
+                behavior: 'smooth',
+            });
+        }
     }
   }, [messages]);
 
@@ -104,6 +103,7 @@ export default function EngineeringAssistant({
       if (isListening) {
         recognitionRef.current.stop();
       } else {
+        setInput('');
         recognitionRef.current.start();
       }
     } else {
@@ -121,17 +121,32 @@ export default function EngineeringAssistant({
     setMessages(newMessages);
     setInput('');
     setLoading(true);
+    
+    // Add a placeholder for the model's response
+    const modelMessagePlaceholder: Message = { role: 'model', content: '', audioLoading: true };
+    setMessages([...newMessages, modelMessagePlaceholder]);
+
 
     try {
-      const assistantInput: EngineeringAssistantInput = {
-        projectContext,
-        history: newMessages.map(({ audioUrl, audioLoading, ...rest}) => rest), // Remove audio fields for the API
-      };
-      // Add a placeholder for the model's response
-      const modelMessagePlaceholder: Message = { role: 'model', content: '', audioLoading: true };
-      setMessages([...newMessages, modelMessagePlaceholder]);
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectContext,
+          // We only need to send the history, not the audio data
+          history: newMessages.map(({ audioUrl, audioLoading, ...rest}) => rest), 
+        }),
+      });
 
-      const result = await chatWithEngineeringAssistant(assistantInput);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
       const assistantMessage: Message = {
         role: 'model',
         content: result.reply,
@@ -151,14 +166,14 @@ export default function EngineeringAssistant({
       
       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       const errorMessage: Message = {
         role: 'model',
-        content:
-          'عذراً، لقد واجهت خطأ. يرجى المحاولة مرة أخرى في وقت لاحق.',
+        content: `عذراً، لقد واجهت خطأ: ${error.message}`,
       };
-      setMessages([...newMessages, errorMessage]);
+       // Update the placeholder with the error message
+       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? errorMessage : msg));
     } finally {
       setLoading(false);
     }
@@ -171,7 +186,7 @@ export default function EngineeringAssistant({
             المهندس المساعد
           </CardTitle>
           <CardDescription>
-            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام.
+            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة GPT-4o)
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 p-4 min-h-0">
@@ -218,14 +233,9 @@ export default function EngineeringAssistant({
                                 src={message.audioUrl} 
                                 autoPlay
                                 className="hidden" 
-                                onEnded={() => {
-                                    // You can add logic here if needed when audio finishes
-                                }}
                             />
                           </>
-                        ) : (
-                            <Volume2 className="text-muted-foreground/50 h-4 w-4" />
-                        )}
+                        ) : null}
                         </div>
                     )}
                   </div>
@@ -238,18 +248,6 @@ export default function EngineeringAssistant({
                   )}
                 </div>
               ))}
-               {loading && messages[messages.length-1]?.role === 'user' && (
-                <div className="flex items-start gap-4">
-                     <Avatar className="w-8 h-8 border">
-                      <AvatarFallback>
-                        <Sparkles className="text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="max-w-prose rounded-lg p-3 bg-muted">
-                        <Loader2 className="animate-spin text-primary" />
-                    </div>
-                </div>
-               )}
             </div>
           </ScrollArea>
         </CardContent>
