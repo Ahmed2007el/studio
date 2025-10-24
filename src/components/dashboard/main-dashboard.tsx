@@ -286,12 +286,12 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground text-justify`}
+             className={`prose prose-base dark:prose-invert max-w-none text-muted-foreground text-justify`}
            >
              {content.split('\n').map((paragraph, index) => {
                 const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
                 return (
-                  <p key={index} className={`mb-2 first:mt-0 ${isListItem ? 'pl-0' : ''}`}>
+                  <p key={index} className={`mb-2 first:mt-0 ${isListItem ? 'p-0' : ''}`}>
                     {paragraph}
                   </p>
                 );
