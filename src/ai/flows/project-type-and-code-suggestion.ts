@@ -19,6 +19,9 @@ export type SuggestStructuralSystemAndCodesInput = z.infer<typeof SuggestStructu
 const SuggestStructuralSystemAndCodesOutputSchema = z.object({
   suggestedStructuralSystem: z.string().describe('The suggested structural system for the project.'),
   applicableBuildingCodes: z.string().describe('The applicable building codes for the project based on its location.'),
+  executionMethod: z.string().describe('The optimal construction methodology and execution plan for the project.'),
+  potentialChallenges: z.string().describe('A list of potential challenges and common mistakes to avoid during the project execution.'),
+  keyFocusAreas: z.string().describe('A list of critical areas and key points to focus on during design and construction.'),
 });
 export type SuggestStructuralSystemAndCodesOutput = z.infer<typeof SuggestStructuralSystemAndCodesOutputSchema>;
 
@@ -30,15 +33,18 @@ const prompt = ai.definePrompt({
   name: 'suggestStructuralSystemAndCodesPrompt',
   input: {schema: SuggestStructuralSystemAndCodesInputSchema},
   output: {schema: SuggestStructuralSystemAndCodesOutputSchema},
-  prompt: `You are an expert civil engineer providing consultation. Based on the project description and location, provide a detailed suggestion for the most suitable structural system and a comprehensive list of applicable building codes.
+  prompt: `You are an expert civil engineer providing consultation. Based on the project description and location, provide a detailed analysis. Your response must be in Arabic.
 
 Project Description: {{{projectDescription}}}
 Project Location: {{{projectLocation}}}
 
-Your response should be in Arabic.
-
-Suggested Structural System: (Provide a detailed rationale for your choice, considering factors like building height, soil conditions if mentioned, material availability, and economic feasibility.)
-Applicable Building Codes: (List all relevant national and international codes, including structural, seismic, wind, fire, and accessibility codes.)`,
+Provide the following:
+- Suggested Structural System: (Provide a detailed rationale for your choice, considering factors like building height, soil conditions if mentioned, material availability, and economic feasibility.)
+- Applicable Building Codes: (List all relevant national and international codes, including structural, seismic, wind, fire, and accessibility codes.)
+- Optimal Execution Method: (Describe the best construction methodology. For example, 'Fast-track construction using precast concrete' or 'Traditional cast-in-situ concrete'. Explain why.)
+- Potential Challenges & Mistakes: (List at least 3 potential challenges or common mistakes. For example, 'Inaccurate soil testing leading to foundation issues' or 'Poor concrete curing in hot weather'.)
+- Key Focus Areas: (List at least 3 critical points to focus on. For example, 'Waterproofing for the basement walls' or 'Coordination between structural and MEP drawings'.)
+`,
 });
 
 const suggestStructuralSystemAndCodesFlow = ai.defineFlow(

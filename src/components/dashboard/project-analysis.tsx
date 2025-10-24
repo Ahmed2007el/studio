@@ -28,13 +28,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Building, Landmark } from 'lucide-react';
+import { Loader2, Building, Landmark, ListChecks, AlertTriangle, Construction } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const FormSchema = z.object({
   projectDescription: z
     .string()
-    .min(10, 'يرجى تقديم وصف للمشروع.'),
+    .min(5, 'يرجى تقديم وصف للمشروع.'),
   projectLocation: z
     .string()
     .min(3, 'يرجى تحديد موقع المشروع.'),
@@ -82,7 +82,7 @@ export default function ProjectAnalysis({
     <Card>
       <CardHeader>
         <CardDescription>
-          أعط فكرة عن مشروعك للحصول على اقتراحات للأنظمة الإنشائية وأكواد البناء.
+        أعط فكرة عن مشروعك للحصول على اقتراحات للأنظمة الإنشائية وأكواد البناء.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -102,7 +102,7 @@ export default function ProjectAnalysis({
                     />
                   </FormControl>
                   <FormDescription>
-                    قدم وصفاً عاماً للمشروع.
+                  قدم وصفاً عاماً للمشروع ومكوناته.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -118,7 +118,7 @@ export default function ProjectAnalysis({
                     <Input placeholder="مثال: دبي، الإمارات" {...field} />
                   </FormControl>
                   <FormDescription>
-                    اذكر المدينة والدولة.
+                  اذكر المدينة والدولة.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -144,7 +144,7 @@ export default function ProjectAnalysis({
                         <Building className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg font-bold">{initialData.suggestedStructuralSystem}</p>
+                        <p className="text-base font-semibold">{initialData.suggestedStructuralSystem}</p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -153,7 +153,34 @@ export default function ProjectAnalysis({
                         <Landmark className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <p className="text-lg font-bold">{initialData.applicableBuildingCodes}</p>
+                        <p className="text-base font-semibold">{initialData.applicableBuildingCodes}</p>
+                    </CardContent>
+                </Card>
+                <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">طريقة التنفيذ المثلى</CardTitle>
+                        <Construction className="w-4 h-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-base font-semibold">{initialData.executionMethod}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">التحديات المحتملة</CardTitle>
+                        <AlertTriangle className="w-4 h-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                         <p className="text-base font-semibold">{initialData.potentialChallenges}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">نقاط التركيز الأساسية</CardTitle>
+                        <ListChecks className="w-4 h-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-base font-semibold">{initialData.keyFocusAreas}</p>
                     </CardContent>
                 </Card>
             </div>
