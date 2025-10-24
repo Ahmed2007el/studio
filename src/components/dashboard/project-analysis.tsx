@@ -96,13 +96,13 @@ export default function ProjectAnalysis({
                   <FormLabel>وصف المشروع</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="مثال: مبنى سكني مكون من 10 طوابق مع طابقين سفليين، يتميز بهيكل خرساني وواجهة زجاجية..."
+                      placeholder="مثال: مبنى سكني مكون من 10 طوابق مع طابقين سفليين..."
                       rows={5}
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    صف نوع الهيكل، الأبعاد، المواد، والميزات الرئيسية.
+                    قدم وصفاً عاماً للمشروع ومكوناته.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -115,10 +115,10 @@ export default function ProjectAnalysis({
                 <FormItem>
                   <FormLabel>موقع المشروع</FormLabel>
                   <FormControl>
-                    <Input placeholder="مثال: دبي، الإمارات العربية المتحدة" {...field} />
+                    <Input placeholder="مثال: دبي، الإمارات" {...field} />
                   </FormControl>
                   <FormDescription>
-                    المدينة والدولة التي يقع فيها المشروع.
+                    اذكر المدينة والدولة.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

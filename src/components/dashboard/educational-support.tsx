@@ -142,7 +142,7 @@ export default function EducationalSupport() {
                   <FormLabel>الهدف/السؤال</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="مثال: أريد أن أفهم كيفية رسم مخططات قوى القص وعزوم الانحناء لجائز بسيط معرض لحمل موزع بانتظام."
+                      placeholder="مثال: أريد أن أفهم كيفية رسم مخططات قوى القص."
                       {...field}
                     />
                   </FormControl>
