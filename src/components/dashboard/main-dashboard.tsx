@@ -45,6 +45,10 @@ export default function MainDashboard() {
           <ClipboardList />
           تحليل المشروع
         </TabsTrigger>
+        <TabsTrigger value="3d-viewer">
+          <View />
+          عارض ثلاثي الأبعاد
+        </TabsTrigger>
         <TabsTrigger value="conceptual-design" disabled={!projectAnalysis}>
           <DraftingCompass />
           التصميم المبدئي
@@ -52,10 +56,6 @@ export default function MainDashboard() {
         <TabsTrigger value="structural-simulation" disabled={!conceptualDesign}>
           <Activity />
           محاكاة إنشائية
-        </TabsTrigger>
-        <TabsTrigger value="3d-viewer">
-          <View />
-          عارض ثلاثي الأبعاد
         </TabsTrigger>
       </TabsList>
       <TabsContent value="educational-support">
@@ -70,6 +70,9 @@ export default function MainDashboard() {
           }}
           initialData={projectAnalysis}
         />
+      </TabsContent>
+       <TabsContent value="3d-viewer">
+        <ThreeDViewer />
       </TabsContent>
       <TabsContent value="conceptual-design">
         {projectAnalysis ? (
@@ -98,9 +101,6 @@ export default function MainDashboard() {
             description="يرجى إكمال خطوة 'التصميم المبدئي' لتفعيل المحاكاة الإنشائية."
           />
         )}
-      </TabsContent>
-      <TabsContent value="3d-viewer">
-        <ThreeDViewer />
       </TabsContent>
     </Tabs>
   );
