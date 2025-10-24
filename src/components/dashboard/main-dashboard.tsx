@@ -76,7 +76,7 @@ export default function MainDashboard() {
     setAnalysisStatus(null);
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!projectAnalysis) return;
 
     const shareText = `
@@ -103,19 +103,38 @@ ${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.author
 تم إنشاؤه بواسطة مساعد الهندسة المدنية.
     `.trim();
 
-    navigator.clipboard.writeText(shareText).then(() => {
-        toast({
-            title: "تم النسخ بنجاح!",
-            description: "تم نسخ نتائج التحليل إلى الحافظة.",
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: `تحليل مشروع: ${projectAnalysis.projectDescription}`,
+                text: shareText,
+            });
+            toast({
+                title: "تمت المشاركة بنجاح!",
+            });
+        } catch (err) {
+            console.error('Failed to share: ', err);
+            toast({
+                variant: "destructive",
+                title: "فشلت المشاركة",
+                description: "لم نتمكن من مشاركة النتائج. قد يكون المتصفح لا يدعم هذه الميزة.",
+            });
+        }
+    } else {
+        navigator.clipboard.writeText(shareText).then(() => {
+            toast({
+                title: "تم النسخ بنجاح!",
+                description: "تم نسخ نتائج التحليل إلى الحافظة.",
+            });
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            toast({
+                variant: "destructive",
+                title: "فشل النسخ",
+                description: "لم نتمكن من نسخ النتائج. يرجى المحاولة مرة أخرى.",
+            });
         });
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-        toast({
-            variant: "destructive",
-            title: "فشل النسخ",
-            description: "لم نتمكن من نسخ النتائج. يرجى المحاولة مرة أخرى.",
-        });
-    });
+    }
   }
 
   const getStatusIcon = (status: 'pending' | 'loading' | 'complete') => {
@@ -338,12 +357,12 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground`}
+             className={`prose dark:prose-invert max-w-none text-muted-foreground text-lg`}
            >
              {content.split('\n').map((paragraph, index) => {
                 const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
                 return (
-                  <p key={index} className={`mb-2 first:mt-0 text-justify text-base ${isListItem ? 'p-0' : ''}`}>
+                  <p key={index} className={`mb-2 first:mt-0 text-base ${isListItem ? 'p-0' : 'text-justify'}`}>
                     {paragraph}
                   </p>
                 );
@@ -368,5 +387,3 @@ function ResultItem({
     </div>
   );
 }
-
-    
