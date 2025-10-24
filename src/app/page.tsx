@@ -15,7 +15,7 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-1 p-4 md:p-6 lg:p-8">
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full mx-auto flex">
           <MainDashboard />
         </div>
       </main>

@@ -1,12 +1,21 @@
 'use client';
 import React from 'react';
 import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import {
   AlertCircle,
   Share2,
+  BookMarked,
+  CheckCircle2,
+  CircleDashed,
+  GanttChartSquare,
+  HardHat,
+  ListChecks,
+  TriangleAlert,
+  History,
+  PlusCircle,
 } from 'lucide-react';
 import {
   Card,
@@ -15,18 +24,19 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import {
-  CheckCircle2,
-  CircleDashed,
-  GanttChartSquare,
-  HardHat,
-  ListChecks,
-  TriangleAlert,
-  BookMarked
-} from 'lucide-react';
 import EngineeringAssistant from './engineering-assistant';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 export type AnalysisStep =
   | 'structuralSystem'
@@ -40,83 +50,169 @@ export type AnalysisStatus = {
   [key in AnalysisStep]: 'pending' | 'loading' | 'complete';
 };
 
-export default function MainDashboard() {
-  const [projectAnalysis, setProjectAnalysis] = useState<
-    | (Partial<SuggestStructuralSystemAndCodesOutput> & {
-        projectDescription: string;
-        projectLocation: string;
-      })
-    | null
-  >(null);
+export type ProjectAnalysisData = Partial<SuggestStructuralSystemAndCodesOutput> & {
+  id: string;
+  projectDescription: string;
+  projectLocation: string;
+  timestamp: string;
+};
 
+export default function MainDashboard() {
+  const [currentAnalysis, setCurrentAnalysis] =
+    useState<ProjectAnalysisData | null>(null);
+  const [analysisHistory, setAnalysisHistory] = useState<ProjectAnalysisData[]>(
+    []
+  );
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<'form' | 'analysis_progress' | 'results'>(
+    'form'
+  );
+
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem('analysisHistory');
+      if (storedHistory) {
+        const parsedHistory = JSON.parse(storedHistory) as ProjectAnalysisData[];
+        setAnalysisHistory(parsedHistory);
+        if (parsedHistory.length > 0) {
+            // Automatically select the most recent analysis
+            setCurrentAnalysis(parsedHistory[0]);
+            setView('results');
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse analysis history from localStorage", e);
+      // Handle corrupted data if necessary
+      localStorage.removeItem('analysisHistory');
+    }
+  }, []);
+
+  const saveHistory = (history: ProjectAnalysisData[]) => {
+    try {
+        localStorage.setItem('analysisHistory', JSON.stringify(history));
+    } catch(e) {
+        console.error("Failed to save analysis history to localStorage", e);
+    }
+  };
+
+  const handleAnalysisStart = (description: string, location: string) => {
+    setError(null);
+    const newAnalysis: ProjectAnalysisData = {
+      id: Date.now().toString(),
+      projectDescription: description,
+      projectLocation: location,
+      timestamp: new Date().toISOString(),
+    };
+    setCurrentAnalysis(newAnalysis);
+    setAnalysisStatus({
+      structuralSystem: 'loading',
+      buildingCodes: 'pending',
+      executionMethod: 'pending',
+      potentialChallenges: 'pending',
+      keyFocusAreas: 'pending',
+      academicReferences: 'pending',
+    });
+    setView('analysis_progress');
+  };
 
   const handleAnalysisUpdate = (
     data: Partial<SuggestStructuralSystemAndCodesOutput>
   ) => {
-    setProjectAnalysis((prev) => ({
-      ...(prev as object),
-      ...data,
-      projectDescription: prev?.projectDescription || '',
-      projectLocation: prev?.projectLocation || '',
-    }));
+    setCurrentAnalysis((prev) => {
+      if (!prev) return null;
+      return { ...prev, ...data };
+    });
+  };
+
+  const handleAnalysisComplete = () => {
+    setCurrentAnalysis(prev => {
+        if (prev) {
+            const updatedHistory = [prev, ...analysisHistory];
+            setAnalysisHistory(updatedHistory);
+            saveHistory(updatedHistory);
+        }
+        return prev;
+    });
+    setView('results');
   };
 
   const handleStatusUpdate = (status: AnalysisStatus) => {
     setAnalysisStatus(status);
+     const isComplete = Object.values(status).every((s) => s === 'complete');
+     if (isComplete) {
+        handleAnalysisComplete();
+     }
   };
 
-  const resetState = () => {
-    setError(null);
-    setProjectAnalysis(null);
+  const handleSelectHistoryItem = (id: string) => {
+    const selected = analysisHistory.find(item => item.id === id);
+    if (selected) {
+        setCurrentAnalysis(selected);
+        setView('results');
+        setAnalysisStatus(null);
+        setError(null);
+    }
+  }
+
+  const handleNewAnalysisClick = () => {
+    setCurrentAnalysis(null);
     setAnalysisStatus(null);
-  };
+    setError(null);
+    setView('form');
+  }
+
 
   const handleShare = async () => {
-    if (!projectAnalysis) return;
+    if (!currentAnalysis) return;
 
     const shareText = `
-تحليل مشروع: ${projectAnalysis.projectDescription}
+تحليل مشروع: ${currentAnalysis.projectDescription}
 
 النظام الإنشائي المقترح:
-${projectAnalysis.suggestedStructuralSystem || 'N/A'}
+${currentAnalysis.suggestedStructuralSystem || 'N/A'}
 
 أكواد البناء المطبقة:
-${projectAnalysis.applicableBuildingCodes || 'N/A'}
+${currentAnalysis.applicableBuildingCodes || 'N/A'}
 
 طريقة التنفيذ المثلى:
-${projectAnalysis.executionMethod || 'N/A'}
+${currentAnalysis.executionMethod || 'N/A'}
 
 التحديات المحتملة:
-${projectAnalysis.potentialChallenges || 'N/A'}
+${currentAnalysis.potentialChallenges || 'N/A'}
 
 نقاط التركيز الأساسية:
-${projectAnalysis.keyFocusAreas || 'N/A'}
+${currentAnalysis.keyFocusAreas || 'N/A'}
 
 مراجع أكاديمية:
-${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.authors}`).join('\n') || 'N/A'}
+${
+  currentAnalysis.academicReferences
+    ?.map((ref) => `- ${ref.title} by ${ref.authors}`)
+    .join('\n') || 'N/A'
+}
 
 تم إنشاؤه بواسطة مساعد الهندسة المدنية.
     `.trim();
 
-    navigator.clipboard.writeText(shareText).then(() => {
+    try {
+        await navigator.clipboard.writeText(shareText);
         toast({
             title: "تم النسخ بنجاح!",
             description: "تم نسخ نتائج التحليل إلى الحافظة.",
         });
-    }).catch(err => {
+    } catch (err) {
         console.error('Failed to copy: ', err);
         toast({
             variant: "destructive",
             title: "فشل النسخ",
             description: "لم نتمكن من نسخ النتائج. يرجى المحاولة مرة أخرى.",
         });
-    });
-  }
+    }
+  };
 
   const getStatusIcon = (status: 'pending' | 'loading' | 'complete') => {
     switch (status) {
@@ -162,87 +258,109 @@ ${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.author
       icon: <ListChecks className="h-5 w-5" />,
     },
     {
-        key: 'academicReferences',
-        label: 'اقتراح مراجع أكاديمية',
-        icon: <BookMarked className="h-5 w-5" />,
-      },
+      key: 'academicReferences',
+      label: 'اقتراح مراجع أكاديمية',
+      icon: <BookMarked className="h-5 w-5" />,
+    },
   ];
 
-  const isAnalyzing = !!analysisStatus && !Object.values(analysisStatus).every(s => s === 'complete' || s === 'pending');
-  const isAnalysisComplete =
-    !!analysisStatus && Object.values(analysisStatus).every((s) => s === 'complete');
-    
-  const showAnalysisProgress = !!analysisStatus;
-
   return (
-    <div className="w-full space-y-8 relative">
-      {!isAnalysisComplete && (
-         <ProjectAnalysis
-         onAnalysisStart={(description, location) => {
-           resetState();
-           setProjectAnalysis({ projectDescription: description, projectLocation: location });
-           setAnalysisStatus({
-             structuralSystem: 'loading',
-             buildingCodes: 'pending',
-             executionMethod: 'pending',
-             potentialChallenges: 'pending',
-             keyFocusAreas: 'pending',
-             academicReferences: 'pending',
-           });
-         }}
-         onAnalysisUpdate={handleAnalysisUpdate}
-         onStatusUpdate={handleStatusUpdate}
-         onError={(e) => setError(e)}
-         isAnalyzing={isAnalyzing}
-       />
-      )}
-     
+    <SidebarProvider>
+      <Sidebar>
+          <SidebarHeader>
+              <div className="flex items-center justify-between">
+                <h2 className="font-headline text-lg">سجل التحليلات</h2>
+                <SidebarTrigger />
+              </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+                {analysisHistory.map(item => (
+                    <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton 
+                          onClick={() => handleSelectHistoryItem(item.id)}
+                          isActive={currentAnalysis?.id === item.id}
+                          className="h-auto py-2"
+                        >
+                            <div className="flex flex-col items-start text-right w-full">
+                                <span className="font-semibold text-sm">{item.projectDescription}</span>
+                                <span className="text-xs text-muted-foreground">{new Date(item.timestamp).toLocaleDateString('ar-EG')}</span>
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarContent>
+      </Sidebar>
+      <div className="w-full space-y-8 relative flex-1">
+        <div className="absolute top-0 right-0 z-10 p-2 md:hidden">
+            <SidebarTrigger/>
+        </div>
+        <div className='flex justify-start mb-4'>
+             <Button onClick={handleNewAnalysisClick}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                تحليل جديد
+            </Button>
+        </div>
+        {view === 'form' && (
+          <ProjectAnalysis
+            onAnalysisStart={handleAnalysisStart}
+            onAnalysisUpdate={handleAnalysisUpdate}
+            onStatusUpdate={handleStatusUpdate}
+            onError={(e) => setError(e)}
+            isAnalyzing={view === 'analysis_progress'}
+          />
+        )}
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>خطأ!</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>خطأ!</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-      {showAnalysisProgress && !isAnalysisComplete && analysisStatus && (
-        <Card>
-          <CardHeader>
-            <CardTitle>جاري التحليل...</CardTitle>
-            <CardDescription>
-              يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-3">
-              {analysisSteps.map((step) => (
-                <li key={step.key} className="flex items-center gap-3">
-                  {getStatusIcon(analysisStatus[step.key])}
-                  <span
-                    className={`text-sm ${
-                      analysisStatus[step.key] === 'pending'
-                        ? 'text-muted-foreground'
-                        : ''
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+        {view === 'analysis_progress' && analysisStatus && (
+          <Card>
+            <CardHeader>
+              <CardTitle>جاري التحليل...</CardTitle>
+              <CardDescription>
+                يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                {analysisSteps.map((step) => (
+                  <li key={step.key} className="flex items-center gap-3">
+                    {getStatusIcon(analysisStatus[step.key])}
+                    <span
+                      className={`text-sm ${
+                        analysisStatus[step.key] === 'pending'
+                          ? 'text-muted-foreground'
+                          : ''
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
-      {isAnalysisComplete && projectAnalysis && (
-         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {view === 'results' && currentAnalysis && (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
-                <Card className="bg-card">
+              <Card className="bg-card">
                 <CardHeader className="flex flex-row items-start justify-between">
-                  <div className='flex-1'>
-                    <CardTitle className="font-headline text-xl">نتائج التحليل</CardTitle>
-                    <CardDescription>{projectAnalysis.projectDescription}</CardDescription>
+                  <div className="flex-1">
+                    <CardTitle className="font-headline text-xl">
+                      نتائج التحليل
+                    </CardTitle>
+                    <CardDescription>
+                      {currentAnalysis.projectDescription}
+                    </CardDescription>
                   </div>
                   <Button variant="ghost" size="icon" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
@@ -250,78 +368,84 @@ ${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.author
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-6 !pt-0">
-                    {projectAnalysis.suggestedStructuralSystem && (
+                  {currentAnalysis.suggestedStructuralSystem && (
                     <ResultItem
-                        icon={<GanttChartSquare />}
-                        title="النظام الإنشائي المقترح"
-                        content={projectAnalysis.suggestedStructuralSystem}
+                      icon={<GanttChartSquare />}
+                      title="النظام الإنشائي المقترح"
+                      content={currentAnalysis.suggestedStructuralSystem}
                     />
-                    )}
-                    {projectAnalysis.applicableBuildingCodes && (
+                  )}
+                  {currentAnalysis.applicableBuildingCodes && (
                     <ResultItem
-                        icon={<ListChecks />}
-                        title="أكواد البناء المطبقة"
-                        content={projectAnalysis.applicableBuildingCodes}
+                      icon={<ListChecks />}
+                      title="أكواد البناء المطبقة"
+                      content={currentAnalysis.applicableBuildingCodes}
                     />
-                    )}
-                    {projectAnalysis.executionMethod && (
+                  )}
+                  {currentAnalysis.executionMethod && (
                     <ResultItem
-                        icon={<HardHat />}
-                        title="طريقة التنفيذ المثلى"
-                        content={projectAnalysis.executionMethod}
+                      icon={<HardHat />}
+                      title="طريقة التنفيذ المثلى"
+                      content={currentAnalysis.executionMethod}
                     />
+                  )}
+                  {currentAnalysis.academicReferences &&
+                    currentAnalysis.academicReferences.length > 0 && (
+                      <ResultItem
+                        icon={<BookMarked />}
+                        title="مراجع أكاديمية مقترحة"
+                        references={currentAnalysis.academicReferences}
+                      />
                     )}
-                    {projectAnalysis.academicReferences && projectAnalysis.academicReferences.length > 0 && (
-                        <ResultItem
-                            icon={<BookMarked />}
-                            title="مراجع أكاديمية مقترحة"
-                            references={projectAnalysis.academicReferences}
-                        />
-                    )}
-                    <div className="grid gap-6 md:grid-cols-2">
-                    {projectAnalysis.potentialChallenges && (
-                        <ResultItem
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {currentAnalysis.potentialChallenges && (
+                      <ResultItem
                         icon={<TriangleAlert />}
                         title="التحديات المحتملة"
-                        content={projectAnalysis.potentialChallenges}
+                        content={currentAnalysis.potentialChallenges}
                         isSubItem
-                        />
+                      />
                     )}
-                    {projectAnalysis.keyFocusAreas && (
-                        <ResultItem
+                    {currentAnalysis.keyFocusAreas && (
+                      <ResultItem
                         icon={<ListChecks />}
                         title="نقاط التركيز الأساسية"
-                        content={projectAnalysis.keyFocusAreas}
+                        content={currentAnalysis.keyFocusAreas}
                         isSubItem
-                        />
+                      />
                     )}
-                    </div>
+                  </div>
                 </CardContent>
-                </Card>
+              </Card>
             </div>
             <div className="lg:col-span-2">
-                <EngineeringAssistant projectContext={projectAnalysis} />
+              <EngineeringAssistant projectContext={currentAnalysis} />
             </div>
-        </div>
-      )}
-
-    </div>
+          </div>
+        )}
+      </div>
+    </SidebarProvider>
   );
 }
 
 function ResultItem({
-    icon,
-    title,
-    content,
-    references,
-    isSubItem = false,
-  }: {
-    icon: React.ReactNode;
+  icon,
+  title,
+  content,
+  references,
+  isSubItem = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  content?: string;
+  references?: {
     title: string;
-    content?: string;
-    references?: { title: string; authors: string; note: string, searchLink: string }[];
-    isSubItem?: boolean;
-  }) {
+    authors: string;
+    note: string;
+    searchLink: string;
+  }[];
+  isSubItem?: boolean;
+}) {
   return (
     <div
       className={`${
@@ -335,32 +459,47 @@ function ResultItem({
           })}
         </div>
         <div className="flex-1">
-          <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
+          <h4 className="font-headline text-base font-semibold mb-1">
+            {title}
+          </h4>
           {content && (
-             <div
-             className={`prose dark:prose-invert max-w-none text-muted-foreground`}
-           >
-             {content.split('\n').map((paragraph, index) => {
-                const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
+            <div className="prose dark:prose-invert max-w-none text-muted-foreground">
+              {content.split('\n').map((paragraph, index) => {
+                const isListItem = paragraph.match(
+                  /^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/
+                );
                 return (
-                  <p key={index} className={`mb-2 first:mt-0 text-base ${isListItem ? 'p-0 text-justify' : 'p-0 text-justify'}`}>
+                  <p
+                    key={index}
+                    className={`mb-2 first:mt-0 text-base p-0 text-justify`}
+                  >
                     {paragraph}
                   </p>
                 );
-             })}
-           </div>
+              })}
+            </div>
           )}
           {references && (
             <ul className="space-y-3 mt-2 list-none p-0">
-                {references.map((ref, index) => (
-                    <li key={index} className="text-base">
-                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-400 hover:underline">
-                          {ref.title}
-                        </a>
-                        <span className="text-muted-foreground text-sm"> by {ref.authors}</span>
-                        <p className="text-sm text-muted-foreground/80 mt-1">{ref.note}</p>
-                    </li>
-                ))}
+              {references.map((ref, index) => (
+                <li key={index} className="text-base">
+                  <a
+                    href={ref.searchLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-blue-400 hover:underline"
+                  >
+                    {ref.title}
+                  </a>
+                  <span className="text-muted-foreground text-sm">
+                    {' '}
+                    by {ref.authors}
+                  </span>
+                  <p className="text-sm text-muted-foreground/80 mt-1">
+                    {ref.note}
+                  </p>
+                </li>
+              ))}
             </ul>
           )}
         </div>
