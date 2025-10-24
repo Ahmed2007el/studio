@@ -24,11 +24,10 @@ import {
   CartesianGrid,
   Legend,
   ResponsiveContainer,
-  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Skeleton } from '../ui/skeleton';
 
 interface StructuralSimulationProps {
@@ -36,6 +35,22 @@ interface StructuralSimulationProps {
   onSimulationComplete: (data: SimulateStructuralAnalysisOutput) => void;
   initialData: SimulateStructuralAnalysisOutput | null;
 }
+
+const chartConfig = {
+  moment: {
+    label: "العزم (kNm)",
+    color: "hsl(var(--chart-1))",
+  },
+  shear: {
+    label: "القص (kN)",
+    color: "hsl(var(--chart-2))",
+  },
+  axial: {
+    label: "القوة المحورية (kN)",
+    color: "hsl(var(--chart-3))",
+  },
+} satisfies ChartConfig;
+
 
 export default function StructuralSimulation({
   designData,
@@ -105,10 +120,9 @@ export default function StructuralSimulation({
                     <div className="h-[400px] w-full">
                         <Skeleton className="h-full w-full" />
                     </div>
-                ): (
-                    <div className="h-[400px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData} layout="vertical">
+                ): chartData && (
+                    <ChartContainer config={chartConfig} className="h-[400px] w-full">
+                        <BarChart accessibilityLayer data={chartData} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis type="number" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                             <YAxis
@@ -120,32 +134,31 @@ export default function StructuralSimulation({
                               axisLine={false}
                               width={80}
                             />
-                            <Tooltip
-                            cursor={{ fill: 'hsl(var(--muted))' }}
-                            content={<ChartTooltipContent />}
+                            <ChartTooltip
+                              cursor={{ fill: 'hsl(var(--muted))' }}
+                              content={<ChartTooltipContent />}
                             />
                             <Legend />
                             <Bar
                             dataKey="moment"
                             name="العزم (kNm)"
-                            fill="hsl(var(--chart-1))"
+                            fill="var(--color-moment)"
                             radius={[0, 4, 4, 0]}
                             />
                             <Bar
                             dataKey="shear"
                             name="القص (kN)"
-                            fill="hsl(var(--chart-2))"
+                            fill="var(--color-shear)"
                             radius={[0, 4, 4, 0]}
                             />
                             <Bar
                             dataKey="axial"
                             name="القوة المحورية (kN)"
-                            fill="hsl(var(--chart-3))"
+                            fill="var(--color-axial)"
                             radius={[0, 4, 4, 0]}
                             />
                         </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                    </ChartContainer>
                 )}
                 </CardContent>
             </Card>
