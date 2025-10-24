@@ -40,32 +40,33 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
     const mount = mountRef.current;
     if (!mount) return;
 
-    // Clean up previous renders before creating a new one
     let animationFrameId: number;
+    let controls: any;
+    let renderer: THREE.WebGLRenderer;
+
     const cleanup = () => {
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
+        cancelAnimationFrame(animationFrameId);
+        if (mount) {
+            mount.innerHTML = '';
         }
-        if(mount) {
-            while (mount.firstChild) {
-                mount.removeChild(mount.firstChild);
-            }
+        if (controls) {
+            controls.dispose();
+        }
+        if (renderer) {
+            renderer.dispose();
         }
     };
-
+    
     cleanup();
     
     // If no design data, don't render the scene
     if (!designData) {
-        // Display the placeholder message again if needed
-        if (mount) {
-            const placeholder = document.createElement('div');
-            placeholder.className = "flex items-center justify-center h-full text-muted-foreground";
-            const p = document.createElement('p');
-            p.textContent = "يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.";
-            placeholder.appendChild(p);
-            mount.appendChild(placeholder);
-        }
+        const placeholder = document.createElement('div');
+        placeholder.className = "flex items-center justify-center h-full text-muted-foreground";
+        const p = document.createElement('p');
+        p.textContent = "يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.";
+        placeholder.appendChild(p);
+        mount.appendChild(placeholder);
         return;
     }
 
@@ -88,13 +89,11 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
     );
     camera.position.set(10, 10, 10);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     mount.appendChild(renderer.domElement);
 
-    let controls: any;
-    
     // Dynamic import for OrbitControls
     import('three/examples/jsm/controls/OrbitControls.js').then(({ OrbitControls }) => {
         controls = new OrbitControls(camera, renderer.domElement);
@@ -171,7 +170,7 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
       if (controls) controls.update();
-      renderer.render(scene, camera);
+      if (renderer) renderer.render(scene, camera);
     };
     
     const handleResize = () => {
@@ -188,12 +187,6 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
     return () => {
       window.removeEventListener('resize', handleResize);
       cleanup();
-      if (controls) {
-        controls.dispose();
-      }
-      if (renderer) {
-        renderer.dispose();
-      }
     };
   }, [designData, renderKey]); // Re-run effect when designData or renderKey changes
 
@@ -217,7 +210,7 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
         >
         {!designData && (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-                <p>يرجى إكمال خطوة "التصميم المبدئي" أولاً لعرض النموذج.</p>
+                <p>يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.</p>
             </div>
         )}
         </div>
