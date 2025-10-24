@@ -286,25 +286,26 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-base dark:prose-invert max-w-none text-muted-foreground text-justify`}
+             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground text-justify`}
            >
              {content.split('\n').map((paragraph, index) => {
-                // Check if the paragraph is a list item
-                if (paragraph.match(/^\d+\.\s/) || paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-zA-Z]\)\s/)) {
-                  return <p key={index} className='mb-2'>{paragraph}</p>;
-                }
-                return <p key={index} className='mb-2 first:mt-0'>{paragraph}</p>;
+                const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
+                return (
+                  <p key={index} className={`mb-2 first:mt-0 ${isListItem ? 'pl-0' : ''}`}>
+                    {paragraph}
+                  </p>
+                );
              })}
            </div>
           )}
           {references && (
-            <ul className="space-y-3 mt-2">
+            <ul className="space-y-3 mt-2 list-none p-0">
                 {references.map((ref, index) => (
                     <li key={index} className="text-base">
-                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent hover:underline">
                           {ref.title}
                         </a>
-                        <span className="text-muted-foreground"> by {ref.authors}</span>
+                        <span className="text-muted-foreground text-sm"> by {ref.authors}</span>
                         <p className="text-sm text-muted-foreground/80 mt-1">{ref.note}</p>
                     </li>
                 ))}
