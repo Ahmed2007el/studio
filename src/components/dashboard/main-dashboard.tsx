@@ -21,6 +21,7 @@ import {
   HardHat,
   ListChecks,
   TriangleAlert,
+  BookMarked
 } from 'lucide-react';
 import EngineeringAssistant from './engineering-assistant';
 
@@ -29,7 +30,8 @@ export type AnalysisStep =
   | 'buildingCodes'
   | 'executionMethod'
   | 'potentialChallenges'
-  | 'keyFocusAreas';
+  | 'keyFocusAreas'
+  | 'academicReferences';
 
 export type AnalysisStatus = {
   [key in AnalysisStep]: 'pending' | 'loading' | 'complete';
@@ -113,15 +115,22 @@ export default function MainDashboard() {
       label: 'تحديد نقاط التركيز الرئيسية',
       icon: <ListChecks className="h-5 w-5" />,
     },
+    {
+        key: 'academicReferences',
+        label: 'اقتراح مراجع أكاديمية',
+        icon: <BookMarked className="h-5 w-5" />,
+      },
   ];
 
-  const isAnalyzing = !!analysisStatus && !Object.values(analysisStatus).every(s => s === 'complete');
+  const isAnalyzing = !!analysisStatus && !Object.values(analysisStatus).every(s => s === 'complete' || s === 'pending');
   const isAnalysisComplete =
     !!analysisStatus && Object.values(analysisStatus).every((s) => s === 'complete');
+    
+  const showAnalysisProgress = !!analysisStatus;
 
   return (
     <div className="w-full space-y-8 relative">
-      {!isAnalyzing && (
+      {!isAnalysisComplete && (
          <ProjectAnalysis
          onAnalysisStart={(description, location) => {
            resetState();
@@ -132,6 +141,7 @@ export default function MainDashboard() {
              executionMethod: 'pending',
              potentialChallenges: 'pending',
              keyFocusAreas: 'pending',
+             academicReferences: 'pending',
            });
          }}
          onAnalysisUpdate={handleAnalysisUpdate}
@@ -150,7 +160,7 @@ export default function MainDashboard() {
         </Alert>
       )}
 
-      {isAnalyzing && analysisStatus && (
+      {showAnalysisProgress && !isAnalysisComplete && analysisStatus && (
         <Card>
           <CardHeader>
             <CardTitle>جاري التحليل...</CardTitle>
@@ -208,6 +218,13 @@ export default function MainDashboard() {
                         title="طريقة التنفيذ المثلى"
                         content={projectAnalysis.executionMethod}
                     />
+                    )}
+                    {projectAnalysis.academicReferences && (
+                        <ResultItem
+                            icon={<BookMarked />}
+                            title="مراجع أكاديمية مقترحة"
+                            content={projectAnalysis.academicReferences}
+                        />
                     )}
                     <div className="grid gap-6 md:grid-cols-2">
                     {projectAnalysis.potentialChallenges && (
@@ -270,14 +287,10 @@ function ResultItem({
           >
             {content.split('\n').map((paragraph, index) => {
                // Check if the paragraph is a list item
-               if (paragraph.match(/^\d+\.\s/)) {
+               if (paragraph.match(/^\d+\.\s/) || paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-zA-Z]\)\s/)) {
                  return <p key={index} className='mb-2'>{paragraph}</p>;
                }
-               // Check for sub-bullets like a), b) etc. or -
-               if (paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-z]\)\s/)) {
-                 return <p key={index} className="ml-4 mb-1">{paragraph}</p>;
-               }
-               return <p key={index} className='mb-2'>{paragraph}</p>;
+               return <p key={index} className='mb-2 first:mt-0'>{paragraph}</p>;
             })}
           </div>
         </div>

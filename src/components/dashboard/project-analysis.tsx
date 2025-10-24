@@ -31,7 +31,7 @@ const FormSchema = z.object({
 type FormValues = z.infer<typeof FormSchema>;
 
 interface ProjectAnalysisProps {
-  onAnalysisStart: (description: string) => void;
+  onAnalysisStart: (description: string, location: string) => void;
   onAnalysisUpdate: (
     data: Partial<SuggestStructuralSystemAndCodesOutput>
   ) => void;
@@ -73,13 +73,13 @@ export default function ProjectAnalysis({
       
     const result = await suggestStructuralSystemAndCodes({
       projectDescription: description,
-      projectLocation: '',
+      projectLocation: '', // Location is derived by AI if needed
       analysisFocus: step,
       context: currentData,
     });
     
     const nextStatus = { ...currentStatus };
-    const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas'];
+    const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas', 'academicReferences'];
     const currentIndex = steps.indexOf(step);
     nextStatus[step] = 'complete';
     if (currentIndex + 1 < steps.length) {
@@ -90,7 +90,7 @@ export default function ProjectAnalysis({
   };
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    onAnalysisStart(data.projectDescription);
+    onAnalysisStart(data.projectDescription, '');
     let currentData: Partial<SuggestStructuralSystemAndCodesOutput> = {};
     let currentStatus: AnalysisStatus = {
         structuralSystem: 'loading',
@@ -98,10 +98,11 @@ export default function ProjectAnalysis({
         executionMethod: 'pending',
         potentialChallenges: 'pending',
         keyFocusAreas: 'pending',
+        academicReferences: 'pending'
       };
 
     try {
-      const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas'];
+      const steps: AnalysisStep[] = ['structuralSystem', 'buildingCodes', 'executionMethod', 'potentialChallenges', 'keyFocusAreas', 'academicReferences'];
 
       for (const step of steps) {
         onStatusUpdate(currentStatus);
@@ -120,7 +121,7 @@ export default function ProjectAnalysis({
   };
 
   return (
-    <Card className="w-full shadow-lg">
+    <Card className="w-full shadow-lg bg-white dark:bg-gray-950">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardHeader>
@@ -138,7 +139,7 @@ export default function ProjectAnalysis({
                     <Textarea
                       placeholder="مثال: مبنى سكني مكون من 5 طوابق في جدة، مع طابق سفلي لمواقف السيارات."
                       rows={4}
-                      className="resize-none text-base text-center"
+                      className="resize-none text-base text-center bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
                       {...field}
                     />
                   </FormControl>
@@ -156,7 +157,7 @@ export default function ProjectAnalysis({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="bg-gray-100 text-gray-700"
+                  className="bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
                   onClick={() => handleExampleClick(ex)}
                 >
                   {ex}
