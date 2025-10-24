@@ -117,7 +117,7 @@ ${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.author
             toast({
                 variant: "destructive",
                 title: "فشلت المشاركة",
-                description: "لم نتمكن من مشاركة النتائج. قد يكون المتصفح لا يدعم هذه الميزة.",
+                description: "لم نتمكن من مشاركة النتائج. قد يكون المتصفح لا يدعم هذه الميزة أو تم رفض الإذن.",
             });
         }
     } else {
