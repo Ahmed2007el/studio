@@ -485,22 +485,24 @@ ${
             <CardHeader>
               <CardTitle>جاري التحليل...</CardTitle>
               <CardDescription>
-                يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك.
+                يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك. قد يستغرق هذا بعض الوقت.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3">
                 {analysisSteps.map((step) => (
-                  <li key={step.key} className="flex items-center gap-3">
-                    {getStatusIcon(analysisStatus[step.key])}
+                  <li key={step.key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                    <div className="flex-shrink-0">{getStatusIcon(analysisStatus[step.key])}</div>
                     <span
-                      className={`text-sm ${
+                      className={`text-sm font-medium ${
                         analysisStatus[step.key] === 'pending'
                           ? 'text-muted-foreground'
-                          : ''
+                          : analysisStatus[step.key] === 'loading'
+                          ? 'text-primary'
+                          : 'text-foreground'
                       }`}
                     >
-                      {step.label}
+                      {analysisStatus[step.key] === 'loading' ? `جاري ${step.label.toLowerCase()}...` : step.label}
                     </span>
                   </li>
                 ))}
@@ -593,5 +595,3 @@ function ResultItem({
     </div>
   );
 }
-
-    

@@ -17,8 +17,9 @@ export default function ThreeDViewer() {
     if (!mountRef.current) return;
 
     let animationFrameId: number;
-    let controls: any;
     const mount = mountRef.current;
+    let renderer: THREE.WebGLRenderer;
+    let controls: any;
 
     const init = async () => {
       // Dynamically import OrbitControls only on the client side
@@ -39,7 +40,7 @@ export default function ThreeDViewer() {
       camera.lookAt(0, 0, 0);
 
       // Renderer setup
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(
         mount.clientWidth,
         mount.clientHeight
@@ -90,8 +91,7 @@ export default function ThreeDViewer() {
         new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
         new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
         new THREE.Vector3(0, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
-        new THREE
-.Vector3(0, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+        new THREE.Vector3(0, groundFloorHeight / 2, villaDepth / 2 - columnSize),
       ];
 
       columnPositions.forEach(pos => {
@@ -131,29 +131,32 @@ export default function ThreeDViewer() {
 
       // Handle resize
       const handleResize = () => {
-        if (!mount) return;
-        camera.aspect =
-          mount.clientWidth / mount.clientHeight;
+        if (!mount || !renderer) return;
+        camera.aspect = mount.clientWidth / mount.clientHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize(
-          mount.clientWidth,
-          mount.clientHeight
-        );
+        renderer.setSize(mount.clientWidth, mount.clientHeight);
       };
       window.addEventListener('resize', handleResize);
     };
 
     init();
 
-    // Cleanup
+    // Cleanup function
     return () => {
-      window.removeEventListener('resize', () => {});
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      if (mount && mount.firstChild) {
-         mount.removeChild(mount.firstChild);
-      }
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        if (controls) {
+            controls.dispose();
+        }
+        if (renderer && renderer.domElement && mount.contains(renderer.domElement)) {
+            mount.removeChild(renderer.domElement);
+        }
+        if (renderer) {
+            renderer.dispose();
+        }
+        // Properly remove the event listener
+        window.removeEventListener('resize', () => {});
     };
   }, []);
 
