@@ -15,148 +15,133 @@ export default function ThreeDViewer() {
 
   useEffect(() => {
     if (!mountRef.current) return;
-
-    let animationFrameId: number;
+    
+    // --- START OF SETUP ---
     const mount = mountRef.current;
-    let renderer: THREE.WebGLRenderer;
+    let animationFrameId: number;
+
+    // Clean up previous renders
+    mount.innerHTML = '';
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('hsl(var(--background))');
+    
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      mount.clientWidth / mount.clientHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(10, 10, 10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    mount.appendChild(renderer.domElement);
+
     let controls: any;
+    
+    // Dynamic import for OrbitControls
+    import('three/examples/jsm/controls/OrbitControls.js').then(({ OrbitControls }) => {
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 5;
+        controls.maxDistance = 50;
+    });
 
-    const init = async () => {
-      // Dynamically import OrbitControls only on the client side
-      const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
+    // --- LIGHTING ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(15, 20, 10);
+    scene.add(directionalLight);
 
-      // Scene setup
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color('hsl(var(--background))');
+    // --- MATERIALS ---
+    const concreteMaterial = new THREE.MeshStandardMaterial({
+      color: 0x9e9e9e,
+      metalness: 0.2,
+      roughness: 0.8,
+    });
 
-      // Camera setup
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        mount.clientWidth / mount.clientHeight,
-        0.1,
-        1000
-      );
-      camera.position.set(10, 10, 10);
-      camera.lookAt(0, 0, 0);
+    // --- VILLA STRUCTURE ---
+    const groundFloorHeight = 4;
+    const slabThickness = 0.2;
+    const columnSize = 0.4;
+    const villaWidth = 12;
+    const villaDepth = 18;
 
-      // Renderer setup
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(
-        mount.clientWidth,
-        mount.clientHeight
-      );
-      renderer.setPixelRatio(window.devicePixelRatio);
-      mount.appendChild(renderer.domElement);
+    const villa = new THREE.Group();
 
-      // Controls
-      controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
+    const slabGeometry = new THREE.BoxGeometry(villaWidth, slabThickness, villaDepth);
+    const slab = new THREE.Mesh(slabGeometry, concreteMaterial);
+    slab.position.y = groundFloorHeight;
+    villa.add(slab);
+    
+    const columnGeometry = new THREE.BoxGeometry(columnSize, groundFloorHeight, columnSize);
+    const columnPositions = [
+      new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+      new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+      new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+      new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+      new THREE.Vector3(0, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+      new THREE.Vector3(0, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+    ];
 
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(15, 20, 10);
-      scene.add(directionalLight);
+    columnPositions.forEach(pos => {
+      const column = new THREE.Mesh(columnGeometry, concreteMaterial);
+      column.position.copy(pos);
+      villa.add(column);
+    });
+    
+    const shearWallWidth = 5;
+    const shearWallThickness = 0.3;
+    const shearWallGeometry = new THREE.BoxGeometry(shearWallWidth, groundFloorHeight, shearWallThickness);
+    
+    const shearWall1 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
+    shearWall1.position.set(0, groundFloorHeight / 2, -villaDepth/4);
+    villa.add(shearWall1);
+    
+    const shearWall2 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
+    shearWall2.position.set(0, groundFloorHeight / 2, villaDepth/4);
+    shearWall2.rotation.y = Math.PI;
+    villa.add(shearWall2);
 
-      // Materials
-      const concreteMaterial = new THREE.MeshStandardMaterial({
-        color: 0x9e9e9e,
-        metalness: 0.2,
-        roughness: 0.8,
-      });
+    scene.add(villa);
 
-      // --- Villa Structure ---
-
-      const groundFloorHeight = 4;
-      const slabThickness = 0.2;
-      const columnSize = 0.4;
-      const villaWidth = 12;
-      const villaDepth = 18;
-
-      // Create a group for the entire structure
-      const villa = new THREE.Group();
-
-      // 1. Slab
-      const slabGeometry = new THREE.BoxGeometry(villaWidth, slabThickness, villaDepth);
-      const slab = new THREE.Mesh(slabGeometry, concreteMaterial);
-      slab.position.y = groundFloorHeight;
-      villa.add(slab);
-
-      // 2. Columns
-      const columnGeometry = new THREE.BoxGeometry(columnSize, groundFloorHeight, columnSize);
-      const columnPositions = [
-        new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
-        new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
-        new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
-        new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
-        new THREE.Vector3(0, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
-        new THREE.Vector3(0, groundFloorHeight / 2, villaDepth / 2 - columnSize),
-      ];
-
-      columnPositions.forEach(pos => {
-        const column = new THREE.Mesh(columnGeometry, concreteMaterial);
-        column.position.copy(pos);
-        villa.add(column);
-      });
-
-      // 3. Shear Walls
-      const shearWallWidth = 5;
-      const shearWallThickness = 0.3;
-      const shearWallGeometry = new THREE.BoxGeometry(shearWallWidth, groundFloorHeight, shearWallThickness);
-
-      const shearWall1 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
-      shearWall1.position.set(0, groundFloorHeight / 2, -villaDepth/4);
-      villa.add(shearWall1);
-      
-      const shearWall2 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
-      shearWall2.position.set(0, groundFloorHeight / 2, villaDepth/4);
-      shearWall2.rotation.y = Math.PI; // Rotate for variety
-      villa.add(shearWall2);
-
-
-      scene.add(villa);
-
-      // Grid Helper
-      const gridHelper = new THREE.GridHelper(50, 50);
-      scene.add(gridHelper);
-
-      // Animation loop
-      const animate = () => {
-        animationFrameId = requestAnimationFrame(animate);
-        controls.update();
-        renderer.render(scene, camera);
-      };
-      animate();
-
-      // Handle resize
-      const handleResize = () => {
-        if (!mount || !renderer) return;
+    // Grid Helper
+    const gridHelper = new THREE.GridHelper(50, 50, 0x555555, 0x333333);
+    scene.add(gridHelper);
+    
+    // --- ANIMATION & RESIZE ---
+    const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    };
+    
+    const handleResize = () => {
         camera.aspect = mount.clientWidth / mount.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(mount.clientWidth, mount.clientHeight);
-      };
-      window.addEventListener('resize', handleResize);
     };
 
-    init();
+    window.addEventListener('resize', handleResize);
+    animate();
 
-    // Cleanup function
+    // --- CLEANUP ---
     return () => {
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-        }
-        if (controls) {
-            controls.dispose();
-        }
-        if (renderer && renderer.domElement && mount.contains(renderer.domElement)) {
-            mount.removeChild(renderer.domElement);
-        }
-        if (renderer) {
-            renderer.dispose();
-        }
-        // Properly remove the event listener
-        window.removeEventListener('resize', () => {});
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+      if (controls) {
+        controls.dispose();
+      }
+      renderer.dispose();
+      // This is now redundant due to innerHTML='' at the start, but good for safety
+      if (mount.contains(renderer.domElement)) {
+          mount.removeChild(renderer.domElement);
+      }
     };
   }, []);
 

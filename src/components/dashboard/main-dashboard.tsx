@@ -492,18 +492,17 @@ ${
               <ul className="space-y-3">
                 {analysisSteps.map((step) => (
                   <li key={step.key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="flex-shrink-0">{getStatusIcon(analysisStatus[step.key])}</div>
+                    <div className="text-primary">{getStatusIcon(analysisStatus[step.key])}</div>
                     <span
-                      className={`text-sm font-medium ${
+                      className={`font-medium ${
                         analysisStatus[step.key] === 'pending'
                           ? 'text-muted-foreground'
-                          : analysisStatus[step.key] === 'loading'
-                          ? 'text-primary'
                           : 'text-foreground'
                       }`}
                     >
-                      {analysisStatus[step.key] === 'loading' ? `جاري ${step.label.toLowerCase()}...` : step.label}
+                      {step.label}
                     </span>
+                    {analysisStatus[step.key] === 'loading' && <span className="text-sm text-muted-foreground animate-pulse">جاري التنفيذ...</span>}
                   </li>
                 ))}
               </ul>
