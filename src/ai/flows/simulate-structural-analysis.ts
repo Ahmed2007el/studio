@@ -9,9 +9,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
-export const SimulateStructuralAnalysisInputSchema = z.object({
+const SimulateStructuralAnalysisInputSchema = z.object({
   projectDescription: z.string().describe('A detailed description of the project, including the type of structure, dimensions, and location.'),
   structuralSystemSuggestion: z.string().describe('The suggested structural system for the project.'),
   columnCrossSection: z.string().describe('The preliminary cross-section design for columns.'),
@@ -31,7 +31,7 @@ const AnalysisResultSchema = z.object({
   axial: z.number().describe('Estimated maximum axial force in kN.'),
 });
 
-export const SimulateStructuralAnalysisOutputSchema = z.object({
+const SimulateStructuralAnalysisOutputSchema = z.object({
   analysisResults: z.array(AnalysisResultSchema).describe('An array of analysis results for key structural elements.'),
   summary: z.string().describe('A brief summary of the analysis results and key findings.')
 });
