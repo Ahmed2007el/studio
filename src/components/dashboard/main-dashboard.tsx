@@ -4,7 +4,10 @@ import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-t
 import { useState } from 'react';
 import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  MessageSquare,
+} from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -12,7 +15,16 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { CheckCircle2, CircleDashed, GanttChartSquare, HardHat, ListChecks, TriangleAlert } from 'lucide-react';
+import {
+  CheckCircle2,
+  CircleDashed,
+  GanttChartSquare,
+  HardHat,
+  ListChecks,
+  TriangleAlert,
+} from 'lucide-react';
+import { Button } from '../ui/button';
+import EngineeringAssistant from './engineering-assistant';
 
 export type AnalysisStep =
   | 'structuralSystem'
@@ -37,6 +49,7 @@ export default function MainDashboard() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
 
   const handleAnalysisUpdate = (
     data: Partial<SuggestStructuralSystemAndCodesOutput>
@@ -50,7 +63,7 @@ export default function MainDashboard() {
 
   const handleStatusUpdate = (status: AnalysisStatus) => {
     setAnalysisStatus(status);
-  }
+  };
 
   const resetState = () => {
     setError(null);
@@ -63,22 +76,51 @@ export default function MainDashboard() {
       case 'pending':
         return <CircleDashed className="h-5 w-5 text-muted-foreground" />;
       case 'loading':
-        return <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" />;
+        return (
+          <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" />
+        );
       case 'complete':
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
     }
   };
 
-  const analysisSteps: {key: AnalysisStep, label: string, icon: React.ReactNode}[] = [
-    { key: 'structuralSystem', label: 'اقتراح النظام الإنشائي', icon: <GanttChartSquare className="h-5 w-5" /> },
-    { key: 'buildingCodes', label: 'تحديد أكواد البناء', icon: <ListChecks className="h-5 w-5" /> },
-    { key: 'executionMethod', label: 'اقتراح طريقة التنفيذ', icon: <HardHat className="h-5 w-5" /> },
-    { key: 'potentialChallenges', label: 'تحديد التحديات المحتملة', icon: <TriangleAlert className="h-5 w-5" /> },
-    { key: 'keyFocusAreas', label: 'تحديد نقاط التركيز الرئيسية', icon: <ListChecks className="h-5 w-5" /> },
+  const analysisSteps: {
+    key: AnalysisStep;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
+    {
+      key: 'structuralSystem',
+      label: 'اقتراح النظام الإنشائي',
+      icon: <GanttChartSquare className="h-5 w-5" />,
+    },
+    {
+      key: 'buildingCodes',
+      label: 'تحديد أكواد البناء',
+      icon: <ListChecks className="h-5 w-5" />,
+    },
+    {
+      key: 'executionMethod',
+      label: 'اقتراح طريقة التنفيذ',
+      icon: <HardHat className="h-5 w-5" />,
+    },
+    {
+      key: 'potentialChallenges',
+      label: 'تحديد التحديات المحتملة',
+      icon: <TriangleAlert className="h-5 w-5" />,
+    },
+    {
+      key: 'keyFocusAreas',
+      label: 'تحديد نقاط التركيز الرئيسية',
+      icon: <ListChecks className="h-5 w-5" />,
+    },
   ];
 
+  const isAnalysisComplete =
+    !!analysisStatus && Object.values(analysisStatus).every((s) => s === 'complete');
+
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full space-y-8 relative">
       <ProjectAnalysis
         onAnalysisStart={(description) => {
           resetState();
@@ -94,7 +136,10 @@ export default function MainDashboard() {
         onAnalysisUpdate={handleAnalysisUpdate}
         onStatusUpdate={handleStatusUpdate}
         onError={(e) => setError(e)}
-        isAnalyzing={!!analysisStatus && Object.values(analysisStatus).some(s => s !== 'complete')}
+        isAnalyzing={
+          !!analysisStatus &&
+          Object.values(analysisStatus).some((s) => s !== 'complete')
+        }
       />
 
       {error && (
@@ -109,19 +154,27 @@ export default function MainDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>جاري التحليل...</CardTitle>
-            <CardDescription>يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك.</CardDescription>
+            <CardDescription>
+              يقوم مساعد الذكاء الاصطناعي بتحليل مشروعك.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             <ul className="space-y-3">
-                {analysisSteps.map(step => (
-                    <li key={step.key} className="flex items-center gap-3">
-                        {getStatusIcon(analysisStatus[step.key])}
-                        <span className={`text-sm ${analysisStatus[step.key] === 'pending' ? 'text-muted-foreground' : ''}`}>
-                            {step.label}
-                        </span>
-                    </li>
-                ))}
-             </ul>
+            <ul className="space-y-3">
+              {analysisSteps.map((step) => (
+                <li key={step.key} className="flex items-center gap-3">
+                  {getStatusIcon(analysisStatus[step.key])}
+                  <span
+                    className={`text-sm ${
+                      analysisStatus[step.key] === 'pending'
+                        ? 'text-muted-foreground'
+                        : ''
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       )}
@@ -153,48 +206,91 @@ export default function MainDashboard() {
                 content={projectAnalysis.executionMethod}
               />
             )}
-             <div className="grid gap-6 md:grid-cols-2">
-                {projectAnalysis.potentialChallenges && (
-                    <ResultItem
-                        icon={<TriangleAlert />}
-                        title="التحديات المحتملة"
-                        content={projectAnalysis.potentialChallenges}
-                        isSubItem
-                    />
-                )}
-                {projectAnalysis.keyFocusAreas && (
-                    <ResultItem
-                        icon={<ListChecks />}
-                        title="نقاط التركيز الأساسية"
-                        content={projectAnalysis.keyFocusAreas}
-                        isSubItem
-                    />
-                )}
-             </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              {projectAnalysis.potentialChallenges && (
+                <ResultItem
+                  icon={<TriangleAlert />}
+                  title="التحديات المحتملة"
+                  content={projectAnalysis.potentialChallenges}
+                  isSubItem
+                />
+              )}
+              {projectAnalysis.keyFocusAreas && (
+                <ResultItem
+                  icon={<ListChecks />}
+                  title="نقاط التركيز الأساسية"
+                  content={projectAnalysis.keyFocusAreas}
+                  isSubItem
+                />
+              )}
+            </div>
           </CardContent>
         </Card>
+      )}
+
+      {isAnalysisComplete && (
+        <>
+          <Button
+            onClick={() => setIsAssistantOpen(true)}
+            className="fixed bottom-8 left-8 h-16 w-16 rounded-full shadow-lg"
+            size="icon"
+          >
+            <MessageSquare className="h-8 w-8" />
+            <span className="sr-only">اسأل المهندس المساعد</span>
+          </Button>
+          <EngineeringAssistant
+            open={isAssistantOpen}
+            onOpenChange={setIsAssistantOpen}
+            projectContext={projectAnalysis}
+          />
+        </>
       )}
     </div>
   );
 }
 
-
-function ResultItem({ icon, title, content, isSubItem = false }: { icon: React.ReactNode; title: string; content: string; isSubItem?: boolean }) {
-    return (
-        <div className={`${isSubItem ? '' : 'rounded-lg border bg-background/50 p-4'}`}>
-            <div className="flex items-start gap-3 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 mt-1">
-                    {React.cloneElement(icon as React.ReactElement, { className: 'h-5 w-5' })}
-                </div>
-                <div className="flex-1">
-                    <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
-                    <div className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}>
-                      {content.split('\n').map((paragraph, index) => (
-                        <p key={index}>{paragraph}</p>
-                      ))}
-                  </div>
-                </div>
-            </div>
+function ResultItem({
+  icon,
+  title,
+  content,
+  isSubItem = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  content: string;
+  isSubItem?: boolean;
+}) {
+  return (
+    <div
+      className={`${
+        isSubItem ? '' : 'rounded-lg border bg-background/50 p-4'
+      }`}
+    >
+      <div className="flex items-start gap-3 mb-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 mt-1">
+          {React.cloneElement(icon as React.ReactElement, {
+            className: 'h-5 w-5',
+          })}
         </div>
-    );
+        <div className="flex-1">
+          <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
+          <div
+            className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}
+          >
+            {content.split('\n').map((paragraph, index) => {
+               // Check if the paragraph is a list item
+               if (paragraph.match(/^\d+\.\s/)) {
+                 return <p key={index}>{paragraph}</p>;
+               }
+               // Check for sub-bullets like a), b) etc. or -
+               if (paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-z]\)\s/)) {
+                 return <p key={index} className="ml-4">{paragraph}</p>;
+               }
+               return <p key={index}>{paragraph}</p>;
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
