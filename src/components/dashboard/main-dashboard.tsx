@@ -536,16 +536,16 @@ function ResultItem({
           })}
         </div>
         <div className="flex-1">
-          <h4 className="font-headline text-base font-semibold mb-1">
+          <h4 className="font-headline text-base font-semibold mb-1 text-right">
             {title}
           </h4>
           {content && (
-            <div className="prose dark:prose-invert max-w-none text-muted-foreground">
+            <div className="prose dark:prose-invert max-w-none text-muted-foreground text-right">
               {content.split('\n').map((paragraph, index) => {
                 return (
                   <p
                     key={index}
-                    className={`mb-2 first:mt-0 text-base p-0 text-justify`}
+                    className={`mb-2 first:mt-0 text-base p-0`}
                   >
                     {paragraph}
                   </p>
@@ -554,7 +554,7 @@ function ResultItem({
             </div>
           )}
           {references && (
-            <ul className="space-y-3 mt-2 list-none p-0">
+            <ul className="space-y-3 mt-2 list-none p-0 text-right">
               {references.map((ref, index) => (
                 <li key={index} className="text-base">
                   <a
@@ -567,7 +567,7 @@ function ResultItem({
                   </a>
                   <span className="text-muted-foreground text-sm">
                     {' '}
-                    by {ref.authors}
+                    - {ref.authors}
                   </span>
                   <p className="text-sm text-muted-foreground/80 mt-1">
                     {ref.note}
@@ -581,5 +581,3 @@ function ResultItem({
     </div>
   );
 }
-
-    
