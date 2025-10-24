@@ -165,7 +165,7 @@ export default function EngineeringAssistant({
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)]">
+    <Card className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">
             المهندس المساعد
