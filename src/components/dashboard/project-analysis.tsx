@@ -81,7 +81,6 @@ export default function ProjectAnalysis({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">تحليل المشروع</CardTitle>
         <CardDescription>
           قدّم تفاصيل حول مشروعك للحصول على اقتراحات مدعومة بالذكاء الاصطناعي للأنظمة الإنشائية وأكواد البناء.
         </CardDescription>
