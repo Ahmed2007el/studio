@@ -307,7 +307,7 @@ ${
                         <span className="sr-only">مشاركة</span>
                       </Button>
                     </CardHeader>
-                    <CardContent className="space-y-6 !pt-0">
+                    <CardContent className="space-y-6">
                       {currentAnalysis.suggestedStructuralSystem && (
                         <ResultItem
                           icon={<GanttChartSquare />}
@@ -533,7 +533,7 @@ function ResultItem({
           {content && (
              <div className="prose dark:prose-invert max-w-none text-muted-foreground">
              {content.split('\n').map((paragraph, index) => (
-               <p key={index} className="mb-2 last:mb-0 text-right">
+               <p key={index} className="mb-2 last:mb-0" dir="rtl">
                  {paragraph}
                </p>
              ))}
