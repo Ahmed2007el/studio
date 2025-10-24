@@ -28,10 +28,12 @@ const GeneratePreliminaryDesignsOutputSchema = z.object({
     .describe('The suggested structural system for the project.'),
   columnCrossSection: z
     .string()
-    .describe('The preliminary cross-section design for columns, with examples and justification.'),
+    .describe('A text description of the preliminary cross-section design for columns, with examples and justification.'),
+  columnWidth: z.number().describe('The suggested width for a typical column in centimeters (cm).'),
+  columnHeight: z.number().describe('The suggested height/depth for a typical column in centimeters (cm).'),
   beamCrossSection: z
     .string()
-    .describe('The preliminary cross-section design for beams, with examples and justification.'),
+    .describe('A text description of the preliminary cross-section design for beams, with examples and justification.'),
   foundationDesign: z
     .string()
     .describe('The preliminary design for foundations, with examples and justification.'),
@@ -61,13 +63,17 @@ const prompt = ai.definePrompt({
 
   Considering the building code: {{buildingCode}} and the project location: {{location}}.
 
-  Provide the following information with detailed explanations, examples, and justifications:
-  - A suggested structural system: (Justify your choice based on efficiency, cost, and suitability for the location).
-  - Preliminary cross-section designs for columns and beams: (Provide specific dimension examples like 'C1: 40x60 cm' and 'B1: 30x70 cm'. Explain *why* these dimensions are a good starting point and mention typical reinforcement).
-  - A preliminary design for the foundations: (Suggest a foundation type like isolated footings, raft, or piles. Provide initial sizing and explain the choice based on assumed soil conditions).
-  - Initial calculations for dead load, live load, wind load, and seismic load: (Present the loads in kN/m^2 or kN. Briefly explain the assumptions and code references used for each calculation. For example: 'Dead Load (Gk): Calculated as ~12 kN/m^2 based on slab thickness, finishes, and partitions.').
+  Provide the following information:
+  1.  **Suggested Structural System**: Justify your choice based on efficiency, cost, and suitability for the location.
+  2.  **Column Design**:
+      *   Provide a descriptive text for the preliminary cross-section of columns. Explain *why* these dimensions are a good starting point and mention typical reinforcement.
+      *   Provide a specific numerical value for the column width in centimeters in the 'columnWidth' field (e.g., 40).
+      *   Provide a specific numerical value for the column height/depth in centimeters in the 'columnHeight' field (e.g., 60).
+  3.  **Beam Design**: Provide a descriptive text for the preliminary cross-section of beams with justifications.
+  4.  **Foundation Design**: Suggest a foundation type (e.g., isolated footings, raft, or piles), provide initial sizing, and explain your choice based on assumed soil conditions.
+  5.  **Load Calculations**: Provide initial calculations for dead load, live load, wind load, and seismic load. Present the loads in kN/m^2 or kN and briefly explain the assumptions and code references used for each.
 
-  Ensure that the designs and calculations are consistent with the specified building code and location. Structure the output clearly.
+  Ensure all text is in Arabic and that the numerical dimensions are correctly placed in their respective fields.
 `,
 });
 

@@ -14,18 +14,6 @@ import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preli
 import { Button } from '../ui/button';
 import { RefreshCw } from 'lucide-react';
 
-// Helper function to parse dimensions like 'C1: 40x60 cm'
-function parseDimensions(dimString: string): { width: number; height: number } | null {
-    if (!dimString) return null;
-    const matches = dimString.match(/(\d+)\s*x\s*(\d+)/);
-    if (matches && matches.length === 3) {
-      // Convert cm to meters
-      const d1 = parseFloat(matches[1]) / 100;
-      const d2 = parseFloat(matches[2]) / 100;
-      return { width: d1, height: d2 };
-    }
-    return null;
-  }
 
 interface ThreeDViewerProps {
   designData: GeneratePreliminaryDesignsOutput | null;
@@ -58,8 +46,8 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
     
     cleanup();
     
-    // If no design data, don't render the scene
-    if (!designData) {
+    // If no design data, or no dimensions, don't render the scene
+    if (!designData || !designData.columnWidth || !designData.columnHeight) {
         const placeholder = document.createElement('div');
         placeholder.className = "flex items-center justify-center h-full text-muted-foreground";
         const p = document.createElement('p');
@@ -69,12 +57,9 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
         return;
     }
 
-    const { columnCrossSection } = designData;
-    const colDims = parseDimensions(columnCrossSection);
-
-    // Use default if parsing fails
-    const columnSizeX = colDims ? colDims.width : 0.4;
-    const columnSizeZ = colDims ? colDims.height : 0.6;
+    // Convert cm to meters
+    const columnSizeX = designData.columnWidth / 100;
+    const columnSizeZ = designData.columnHeight / 100;
     
     // --- START OF SETUP ---
     const scene = new THREE.Scene();
