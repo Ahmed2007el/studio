@@ -492,7 +492,7 @@ ${
               <ul className="space-y-3">
                 {analysisSteps.map((step) => (
                   <li key={step.key} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="text-primary">{getStatusIcon(analysisStatus[step.key])}</div>
+                    <div className="text-primary">{analysisStatus[step.key] === 'complete' ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : analysisStatus[step.key] === 'loading' ? <GanttChartSquare className="h-5 w-5 animate-pulse text-primary" /> : <CircleDashed className="h-5 w-5 text-muted-foreground" />}</div>
                     <span
                       className={`font-medium ${
                         analysisStatus[step.key] === 'pending'
@@ -551,19 +551,12 @@ function ResultItem({
             {title}
           </h4>
           {content && (
-            <div className="prose dark:prose-invert max-w-none text-muted-foreground text-right" style={{ whiteSpace: 'pre-wrap' }}>
-              {content.split('\n').map((paragraph, index) => {
-                // Check if the paragraph contains list-like items (e.g., "1. ", "- ", "* ")
-                const isList = /^\s*(\d+\.|-|\*)\s/.test(paragraph);
-                return (
-                  <p
-                    key={index}
-                    className={`mb-2 first:mt-0 text-base p-0 text-right ${isList ? 'pr-4' : ''}`}
-                  >
-                    {paragraph}
-                  </p>
-                );
-              })}
+            <div className="prose dark:prose-invert max-w-none text-muted-foreground prose-p:text-right" style={{ whiteSpace: 'pre-wrap' }}>
+              {content.split('\n').map((paragraph, index) => (
+                <p key={index} className="mb-2 last:mb-0">
+                  {paragraph}
+                </p>
+              ))}
             </div>
           )}
           {references && (
