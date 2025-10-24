@@ -407,12 +407,12 @@ ${
             </Tabs>
         </div>
         <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="assistant">
+          <Tabs defaultValue="assistant" className='h-full'>
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="assistant"><MessageCircle className="mr-2"/> المساعد الهندسي</TabsTrigger>
                 <TabsTrigger value="education"><GraduationCap className="mr-2"/> الدعم التعليمي</TabsTrigger>
             </TabsList>
-            <TabsContent value="assistant">
+            <TabsContent value="assistant" className='h-[calc(100%-40px)]'>
               <EngineeringAssistant projectContext={currentAnalysis} />
             </TabsContent>
             <TabsContent value="education">
@@ -552,10 +552,12 @@ function ResultItem({
           {content && (
             <div className="prose dark:prose-invert max-w-none text-muted-foreground text-right" style={{ whiteSpace: 'pre-wrap' }}>
               {content.split('\n').map((paragraph, index) => {
+                // Check if the paragraph contains list-like items (e.g., "1. ", "- ", "* ")
+                const isList = /^\s*(\d+\.|-|\*)\s/.test(paragraph);
                 return (
                   <p
                     key={index}
-                    className={`mb-2 first:mt-0 text-base p-0 text-right`}
+                    className={`mb-2 first:mt-0 text-base p-0 text-right ${isList ? 'pr-4' : ''}`}
                   >
                     {paragraph}
                   </p>
@@ -591,3 +593,5 @@ function ResultItem({
     </div>
   );
 }
+
+    
