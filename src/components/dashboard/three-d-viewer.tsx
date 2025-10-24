@@ -18,6 +18,7 @@ export default function ThreeDViewer() {
 
     let animationFrameId: number;
     let controls: any;
+    const mount = mountRef.current;
 
     const init = async () => {
       // Dynamically import OrbitControls only on the client side
@@ -30,47 +31,95 @@ export default function ThreeDViewer() {
       // Camera setup
       const camera = new THREE.PerspectiveCamera(
         75,
-        mountRef.current!.clientWidth / mountRef.current!.clientHeight,
+        mount.clientWidth / mount.clientHeight,
         0.1,
         1000
       );
-      camera.position.z = 5;
+      camera.position.set(10, 10, 10);
+      camera.lookAt(0, 0, 0);
 
       // Renderer setup
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(
-        mountRef.current!.clientWidth,
-        mountRef.current!.clientHeight
+        mount.clientWidth,
+        mount.clientHeight
       );
       renderer.setPixelRatio(window.devicePixelRatio);
-      mountRef.current!.appendChild(renderer.domElement);
+      mount.appendChild(renderer.domElement);
 
       // Controls
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
 
       // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
       scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-      directionalLight.position.set(5, 5, 5);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(15, 20, 10);
       scene.add(directionalLight);
 
-      // Sample object
-      const geometry = new THREE.BoxGeometry(1.5, 2.5, 1.5);
-      const material = new THREE.MeshStandardMaterial({
-          color: new THREE.Color('hsl(var(--primary))'),
-          metalness: 0.3,
-          roughness: 0.6,
+      // Materials
+      const concreteMaterial = new THREE.MeshStandardMaterial({
+        color: 0x9e9e9e,
+        metalness: 0.2,
+        roughness: 0.8,
       });
-      const cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
 
-      const wireframe = new THREE.LineSegments(
-          new THREE.EdgesGeometry(geometry),
-          new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 })
-      );
-      cube.add(wireframe);
+      // --- Villa Structure ---
+
+      const groundFloorHeight = 4;
+      const slabThickness = 0.2;
+      const columnSize = 0.4;
+      const villaWidth = 12;
+      const villaDepth = 18;
+
+      // Create a group for the entire structure
+      const villa = new THREE.Group();
+
+      // 1. Slab
+      const slabGeometry = new THREE.BoxGeometry(villaWidth, slabThickness, villaDepth);
+      const slab = new THREE.Mesh(slabGeometry, concreteMaterial);
+      slab.position.y = groundFloorHeight;
+      villa.add(slab);
+
+      // 2. Columns
+      const columnGeometry = new THREE.BoxGeometry(columnSize, groundFloorHeight, columnSize);
+      const columnPositions = [
+        new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+        new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+        new THREE.Vector3(-villaWidth / 2 + columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+        new THREE.Vector3(villaWidth / 2 - columnSize, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+        new THREE.Vector3(0, groundFloorHeight / 2, -villaDepth / 2 + columnSize),
+        new THREE
+.Vector3(0, groundFloorHeight / 2, villaDepth / 2 - columnSize),
+      ];
+
+      columnPositions.forEach(pos => {
+        const column = new THREE.Mesh(columnGeometry, concreteMaterial);
+        column.position.copy(pos);
+        villa.add(column);
+      });
+
+      // 3. Shear Walls
+      const shearWallWidth = 5;
+      const shearWallThickness = 0.3;
+      const shearWallGeometry = new THREE.BoxGeometry(shearWallWidth, groundFloorHeight, shearWallThickness);
+
+      const shearWall1 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
+      shearWall1.position.set(0, groundFloorHeight / 2, -villaDepth/4);
+      villa.add(shearWall1);
+      
+      const shearWall2 = new THREE.Mesh(shearWallGeometry, concreteMaterial);
+      shearWall2.position.set(0, groundFloorHeight / 2, villaDepth/4);
+      shearWall2.rotation.y = Math.PI; // Rotate for variety
+      villa.add(shearWall2);
+
+
+      scene.add(villa);
+
+      // Grid Helper
+      const gridHelper = new THREE.GridHelper(50, 50);
+      scene.add(gridHelper);
 
       // Animation loop
       const animate = () => {
@@ -82,13 +131,13 @@ export default function ThreeDViewer() {
 
       // Handle resize
       const handleResize = () => {
-        if (!mountRef.current) return;
+        if (!mount) return;
         camera.aspect =
-          mountRef.current.clientWidth / mountRef.current.clientHeight;
+          mount.clientWidth / mount.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(
-          mountRef.current.clientWidth,
-          mountRef.current.clientHeight
+          mount.clientWidth,
+          mount.clientHeight
         );
       };
       window.addEventListener('resize', handleResize);
@@ -102,8 +151,8 @@ export default function ThreeDViewer() {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
-      if (mountRef.current && mountRef.current.firstChild) {
-         mountRef.current.removeChild(mountRef.current.firstChild);
+      if (mount && mount.firstChild) {
+         mount.removeChild(mount.firstChild);
       }
     };
   }, []);
@@ -113,7 +162,7 @@ export default function ThreeDViewer() {
       <CardHeader>
         <CardTitle className="font-headline">عارض نماذج ثلاثية الأبعاد</CardTitle>
         <CardDescription>
-          تفاعل مع تمثيل ثلاثي الأبعاد للهيكل. هذا نموذج تجريبي.
+          تفاعل مع تمثيل هيكلي ثلاثي الأبعاد للمشروع. هذا نموذج افتراضي.
         </CardDescription>
       </CardHeader>
       <CardContent>
