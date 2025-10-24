@@ -2,8 +2,8 @@
 
 import {
   explainEngineeringConcepts,
-  type ExplainEngineeringConceptsOutput,
 } from '@/ai/flows/explain-engineering-concepts';
+import type { ExplainEngineeringConceptsOutput } from '@/ai/flows/explain-engineering-concepts'
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -85,7 +85,7 @@ export default function EducationalSupport() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">الدعم التعليمي</CardTitle>
+        <CardTitle className="font-headline text-xl">الدعم التعليمي</CardTitle>
         <CardDescription>
           اسأل عن أي مفهوم في الهندسة المدنية للحصول على شرح مفصل ومراجع وأفكار لمشاريع.
         </CardDescription>
