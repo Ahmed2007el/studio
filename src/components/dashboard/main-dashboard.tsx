@@ -6,16 +6,15 @@ import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import {
   AlertCircle,
-  Share2,
   BookMarked,
   CheckCircle2,
   CircleDashed,
   GanttChartSquare,
   HardHat,
   ListChecks,
-  TriangleAlert,
-  History,
   PlusCircle,
+  Share2,
+  TriangleAlert,
 } from 'lucide-react';
 import {
   Card,
@@ -79,11 +78,6 @@ export default function MainDashboard() {
       if (storedHistory) {
         const parsedHistory = JSON.parse(storedHistory) as ProjectAnalysisData[];
         setAnalysisHistory(parsedHistory);
-        if (parsedHistory.length > 0) {
-            // Automatically select the most recent analysis
-            setCurrentAnalysis(parsedHistory[0]);
-            setView('results');
-        }
       }
     } catch (e) {
       console.error("Failed to parse analysis history from localStorage", e);
