@@ -1,8 +1,7 @@
 'use client';
-
+import React from 'react';
 import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useState } from 'react';
-import React from 'react';
 import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -106,7 +105,7 @@ export default function MainDashboard() {
         </Alert>
       )}
 
-      {analysisStatus && (
+      {analysisStatus && !projectAnalysis?.suggestedStructuralSystem && (
         <Card>
           <CardHeader>
             <CardTitle>جاري التحليل...</CardTitle>
@@ -183,13 +182,19 @@ export default function MainDashboard() {
 function ResultItem({ icon, title, content, isSubItem = false }: { icon: React.ReactNode; title: string; content: string; isSubItem?: boolean }) {
     return (
         <div className={`${isSubItem ? '' : 'rounded-lg border bg-background/50 p-4'}`}>
-            <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="flex items-start gap-3 mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 mt-1">
                     {React.cloneElement(icon as React.ReactElement, { className: 'h-5 w-5' })}
                 </div>
-                <h4 className="font-headline text-base font-semibold">{title}</h4>
+                <div className="flex-1">
+                    <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
+                    <div className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}>
+                      {content.split('\n').map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                      ))}
+                  </div>
+                </div>
             </div>
-            <p className={`pr-11 text-sm ${isSubItem ? 'text-muted-foreground' : ''}`}>{content}</p>
         </div>
     );
 }
