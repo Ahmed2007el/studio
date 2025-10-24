@@ -2,8 +2,8 @@
 
 import {
   suggestStructuralSystemAndCodes,
-  type SuggestStructuralSystemAndCodesOutput,
 } from '@/ai/flows/project-type-and-code-suggestion';
+import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,7 +34,7 @@ import { useToast } from '@/hooks/use-toast';
 const FormSchema = z.object({
   projectDescription: z
     .string()
-    .min(50, 'يرجى تقديم وصف أكثر تفصيلاً للمشروع.'),
+    .min(10, 'يرجى تقديم وصف للمشروع.'),
   projectLocation: z
     .string()
     .min(3, 'يرجى تحديد موقع المشروع.'),
@@ -82,7 +82,7 @@ export default function ProjectAnalysis({
     <Card>
       <CardHeader>
         <CardDescription>
-          قدّم تفاصيل حول مشروعك للحصول على اقتراحات مدعومة بالذكاء الاصطناعي للأنظمة الإنشائية وأكواد البناء.
+          أعط فكرة عن مشروعك للحصول على اقتراحات للأنظمة الإنشائية وأكواد البناء.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -96,13 +96,13 @@ export default function ProjectAnalysis({
                   <FormLabel>وصف المشروع</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="مثال: مبنى سكني مكون من 10 طوابق مع طابقين سفليين..."
+                      placeholder="مثال: مبنى سكني من 5 طوابق..."
                       rows={5}
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    قدم وصفاً عاماً للمشروع ومكوناته.
+                    قدم وصفاً عاماً للمشروع.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
