@@ -219,7 +219,7 @@ export default function MainDashboard() {
                         content={projectAnalysis.executionMethod}
                     />
                     )}
-                    {projectAnalysis.academicReferences && (
+                    {projectAnalysis.academicReferences && projectAnalysis.academicReferences.length > 0 && (
                         <ResultItem
                             icon={<BookMarked />}
                             title="مراجع أكاديمية مقترحة"
