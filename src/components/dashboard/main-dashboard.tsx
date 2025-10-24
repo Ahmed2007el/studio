@@ -295,6 +295,125 @@ ${
     },
   ];
 
+  const renderResults = () => {
+    if (!currentAnalysis) return null;
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-6">
+            <Tabs defaultValue="analysis" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
+                <TabsTrigger value="design"><BrainCircuit className="mr-2"/> النمذجة والتصميم</TabsTrigger>
+            </TabsList>
+            <TabsContent value="analysis">
+                <Card className="bg-card">
+                    <CardHeader className="flex flex-row items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="font-headline text-xl">
+                          نتائج التحليل الأولي
+                        </CardTitle>
+                        <CardDescription>
+                          {currentAnalysis.projectDescription}
+                        </CardDescription>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={handleShare}>
+                        <Share2 className="h-5 w-5" />
+                        <span className="sr-only">مشاركة</span>
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-6 !pt-0">
+                      {currentAnalysis.suggestedStructuralSystem && (
+                        <ResultItem
+                          icon={<GanttChartSquare />}
+                          title="النظام الإنشائي المقترح"
+                          content={currentAnalysis.suggestedStructuralSystem}
+                        />
+                      )}
+                      {currentAnalysis.applicableBuildingCodes && (
+                        <ResultItem
+                          icon={<ListChecks />}
+                          title="أكواد البناء المطبقة"
+                          content={currentAnalysis.applicableBuildingCodes}
+                        />
+                      )}
+                      {currentAnalysis.executionMethod && (
+                        <ResultItem
+                          icon={<HardHat />}
+                          title="طريقة التنفيذ المثلى"
+                          content={currentAnalysis.executionMethod}
+                        />
+                      )}
+                      {currentAnalysis.academicReferences &&
+                        currentAnalysis.academicReferences.length > 0 && (
+                          <ResultItem
+                            icon={<BookMarked />}
+                            title="مراجع أكاديمية مقترحة"
+                            references={currentAnalysis.academicReferences}
+                          />
+                        )}
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {currentAnalysis.potentialChallenges && (
+                          <ResultItem
+                            icon={<TriangleAlert />}
+                            title="التحديات المحتملة"
+                            content={currentAnalysis.potentialChallenges}
+                            isSubItem
+                          />
+                        )}
+                        {currentAnalysis.keyFocusAreas && (
+                          <ResultItem
+                            icon={<ListChecks />}
+                            title="نقاط التركيز الأساسية"
+                            content={currentAnalysis.keyFocusAreas}
+                            isSubItem
+                          />
+                        )}
+                      </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="design" className="space-y-6">
+                {currentAnalysis.suggestedStructuralSystem && currentAnalysis.applicableBuildingCodes && (
+                    <ConceptualDesign 
+                        projectAnalysis={{
+                            projectDescription: currentAnalysis.projectDescription,
+                            projectLocation: currentAnalysis.projectLocation,
+                            suggestedStructuralSystem: currentAnalysis.suggestedStructuralSystem,
+                            applicableBuildingCodes: currentAnalysis.applicableBuildingCodes
+                        }}
+                        onDesignComplete={(data) => handleDataUpdate('conceptualDesign', data)}
+                        initialData={currentAnalysis.conceptualDesign}
+                    />
+                )}
+                {currentAnalysis.conceptualDesign ? (
+                    <StructuralSimulation 
+                        designData={{...currentAnalysis.conceptualDesign, projectDescription: currentAnalysis.projectDescription}}
+                        onSimulationComplete={(data) => handleDataUpdate('structuralSimulation', data)}
+                        initialData={currentAnalysis.structuralSimulation}
+                    />
+                ) : (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>المحاكاة الإنشائية</CardTitle>
+                            <CardDescription>
+                                يرجى إكمال خطوة "التصميم المبدئي" أولاً لتتمكن من تشغيل المحاكاة.
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                )}
+                <ThreeDViewer />
+            </TabsContent>
+            </Tabs>
+        </div>
+        <div className="lg:col-span-2 space-y-6">
+          <EngineeringAssistant projectContext={currentAnalysis} />
+          <EducationalSupport />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -380,129 +499,7 @@ ${
           </Card>
         )}
 
-        {view === 'results' && currentAnalysis && (
-            <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
-              <TabsTrigger value="design"><BrainCircuit className="mr-2"/> التصميم المبدئي</TabsTrigger>
-              <TabsTrigger value="simulation"><GanttChartSquare className="mr-2"/> المحاكاة الإنشائية</TabsTrigger>
-              <TabsTrigger value="viewer"><Box className="mr-2"/> العارض ثلاثي الأبعاد</TabsTrigger>
-              <TabsTrigger value="assistant"><MessageCircle className="mr-2"/> المساعد الهندسي</TabsTrigger>
-            </TabsList>
-            <TabsContent value="analysis">
-                <Card className="bg-card mt-4">
-                    <CardHeader className="flex flex-row items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="font-headline text-xl">
-                          نتائج التحليل الأولي
-                        </CardTitle>
-                        <CardDescription>
-                          {currentAnalysis.projectDescription}
-                        </CardDescription>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={handleShare}>
-                        <Share2 className="h-5 w-5" />
-                        <span className="sr-only">مشاركة</span>
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-6 !pt-0">
-                      {currentAnalysis.suggestedStructuralSystem && (
-                        <ResultItem
-                          icon={<GanttChartSquare />}
-                          title="النظام الإنشائي المقترح"
-                          content={currentAnalysis.suggestedStructuralSystem}
-                        />
-                      )}
-                      {currentAnalysis.applicableBuildingCodes && (
-                        <ResultItem
-                          icon={<ListChecks />}
-                          title="أكواد البناء المطبقة"
-                          content={currentAnalysis.applicableBuildingCodes}
-                        />
-                      )}
-                      {currentAnalysis.executionMethod && (
-                        <ResultItem
-                          icon={<HardHat />}
-                          title="طريقة التنفيذ المثلى"
-                          content={currentAnalysis.executionMethod}
-                        />
-                      )}
-                      {currentAnalysis.academicReferences &&
-                        currentAnalysis.academicReferences.length > 0 && (
-                          <ResultItem
-                            icon={<BookMarked />}
-                            title="مراجع أكاديمية مقترحة"
-                            references={currentAnalysis.academicReferences}
-                          />
-                        )}
-                      <div className="grid gap-6 md:grid-cols-2">
-                        {currentAnalysis.potentialChallenges && (
-                          <ResultItem
-                            icon={<TriangleAlert />}
-                            title="التحديات المحتملة"
-                            content={currentAnalysis.potentialChallenges}
-                            isSubItem
-                          />
-                        )}
-                        {currentAnalysis.keyFocusAreas && (
-                          <ResultItem
-                            icon={<ListChecks />}
-                            title="نقاط التركيز الأساسية"
-                            content={currentAnalysis.keyFocusAreas}
-                            isSubItem
-                          />
-                        )}
-                      </div>
-                    </CardContent>
-                </Card>
-            </TabsContent>
-            <TabsContent value="design">
-                {currentAnalysis.suggestedStructuralSystem && currentAnalysis.applicableBuildingCodes && (
-                    <ConceptualDesign 
-                        projectAnalysis={{
-                            projectDescription: currentAnalysis.projectDescription,
-                            projectLocation: currentAnalysis.projectLocation,
-                            suggestedStructuralSystem: currentAnalysis.suggestedStructuralSystem,
-                            applicableBuildingCodes: currentAnalysis.applicableBuildingCodes
-                        }}
-                        onDesignComplete={(data) => handleDataUpdate('conceptualDesign', data)}
-                        initialData={currentAnalysis.conceptualDesign}
-                    />
-                )}
-            </TabsContent>
-            <TabsContent value="simulation">
-                {currentAnalysis.conceptualDesign ? (
-                    <StructuralSimulation 
-                        designData={{...currentAnalysis.conceptualDesign, projectDescription: currentAnalysis.projectDescription}}
-                        onSimulationComplete={(data) => handleDataUpdate('structuralSimulation', data)}
-                        initialData={currentAnalysis.structuralSimulation}
-                    />
-                ) : (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>المحاكاة الإنشائية</CardTitle>
-                            <CardDescription>
-                                يرجى إكمال خطوة "التصميم المبدئي" أولاً لتتمكن من تشغيل المحاكاة.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                )}
-            </TabsContent>
-            <TabsContent value="viewer">
-                <ThreeDViewer />
-            </TabsContent>
-            <TabsContent value="assistant">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-3">
-                        <EducationalSupport />
-                    </div>
-                    <div className="lg:col-span-2">
-                        <EngineeringAssistant projectContext={currentAnalysis} />
-                    </div>
-                </div>
-            </TabsContent>
-          </Tabs>
-        )}
+        {view === 'results' && currentAnalysis && renderResults()}
       </div>
     </SidebarProvider>
   );
@@ -584,3 +581,5 @@ function ResultItem({
     </div>
   );
 }
+
+    
