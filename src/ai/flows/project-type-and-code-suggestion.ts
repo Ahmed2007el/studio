@@ -35,13 +35,21 @@ export type SuggestStructuralSystemAndCodesInput = z.infer<
   typeof SuggestStructuralSystemAndCodesInputSchema
 >;
 
+const AcademicReferenceSchema = z.object({
+    title: z.string().describe("The title of the academic reference (book, paper, etc.)."),
+    authors: z.string().describe("The author(s) of the reference."),
+    note: z.string().describe("A brief note on why this reference is relevant to the project."),
+    searchLink: z.string().url().describe("A Google search URL to find the reference online. Should be in the format 'https://www.google.com/search?q=...'"),
+});
+
+
 const SuggestStructuralSystemAndCodesOutputSchema = z.object({
   suggestedStructuralSystem: z.string().optional().describe('The suggested structural system for the project.'),
   applicableBuildingCodes: z.string().optional().describe('The applicable building codes for the project based on its location.'),
   executionMethod: z.string().optional().describe('The optimal construction methodology and execution plan for the project.'),
   potentialChallenges: z.string().optional().describe('A list of potential challenges and common mistakes to avoid during the project execution.'),
   keyFocusAreas: z.string().optional().describe('A list of critical areas and key points to focus on during design and construction.'),
-  academicReferences: z.string().optional().describe('A list of academic references, textbooks, and research papers relevant to the project.'),
+  academicReferences: z.array(AcademicReferenceSchema).optional().describe('A list of academic references, textbooks, and research papers relevant to the project.'),
 });
 export type SuggestStructuralSystemAndCodesOutput = z.infer<
   typeof SuggestStructuralSystemAndCodesOutputSchema
@@ -86,7 +94,7 @@ Your current task is to focus ONLY on: '{{analysisFocus}}'. Provide a detailed r
 - If analysisFocus is 'executionMethod', describe the best construction methodology with justification. For example, 'Fast-track construction using precast concrete because...' or 'Traditional cast-in-situ concrete due to...'. Explain the steps.
 - If analysisFocus is 'potentialChallenges', list at least 3 potential challenges and common mistakes with brief explanations. For example, '1. Inaccurate soil testing leading to foundation issues. 2. Poor concrete curing in hot weather, which can reduce strength.'
 - If analysisFocus is 'keyFocusAreas', list at least 3 critical points to focus on during design and construction. For example, '1. Waterproofing for the basement walls to prevent leakage. 2. Coordination between structural and MEP drawings to avoid conflicts.'
-- If analysisFocus is 'academicReferences', list at least 3 relevant academic references. Include textbooks, research papers, or design manuals. For each, provide the title, author(s), and a brief note on why it's relevant to this specific project.
+- If analysisFocus is 'academicReferences', list at least 3 relevant academic references. For each, provide the title, author(s), a brief note on its relevance, and a Google search URL to find it. For example, for the book "Structural Concrete: Theory and Design" by M. Nadim Hassoun, the searchLink would be "https://www.google.com/search?q=Structural+Concrete:+Theory+and+Design+M.+Nadim+Hassoun".
 
 Generate a response only for the '{{analysisFocus}}' field. Do not repeat information from the context.
 `,

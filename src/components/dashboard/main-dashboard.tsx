@@ -223,7 +223,7 @@ export default function MainDashboard() {
                         <ResultItem
                             icon={<BookMarked />}
                             title="مراجع أكاديمية مقترحة"
-                            content={projectAnalysis.academicReferences}
+                            references={projectAnalysis.academicReferences}
                         />
                     )}
                     <div className="grid gap-6 md:grid-cols-2">
@@ -258,16 +258,18 @@ export default function MainDashboard() {
 }
 
 function ResultItem({
-  icon,
-  title,
-  content,
-  isSubItem = false,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  content: string;
-  isSubItem?: boolean;
-}) {
+    icon,
+    title,
+    content,
+    references,
+    isSubItem = false,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    content?: string;
+    references?: { title: string; authors: string; note: string, searchLink: string }[];
+    isSubItem?: boolean;
+  }) {
   return (
     <div
       className={`${
@@ -282,17 +284,32 @@ function ResultItem({
         </div>
         <div className="flex-1">
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
-          <div
-            className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}
-          >
-            {content.split('\n').map((paragraph, index) => {
-               // Check if the paragraph is a list item
-               if (paragraph.match(/^\d+\.\s/) || paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-zA-Z]\)\s/)) {
-                 return <p key={index} className='mb-2'>{paragraph}</p>;
-               }
-               return <p key={index} className='mb-2 first:mt-0'>{paragraph}</p>;
-            })}
-          </div>
+          {content && (
+             <div
+             className={`prose prose-sm dark:prose-invert max-w-none text-muted-foreground`}
+           >
+             {content.split('\n').map((paragraph, index) => {
+                // Check if the paragraph is a list item
+                if (paragraph.match(/^\d+\.\s/) || paragraph.match(/^\s*-\s/) || paragraph.match(/^\s*[a-zA-Z]\)\s/)) {
+                  return <p key={index} className='mb-2'>{paragraph}</p>;
+                }
+                return <p key={index} className='mb-2 first:mt-0'>{paragraph}</p>;
+             })}
+           </div>
+          )}
+          {references && (
+            <ul className="space-y-3 mt-2">
+                {references.map((ref, index) => (
+                    <li key={index} className="text-sm">
+                        <a href={ref.searchLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">
+                          {ref.title}
+                        </a>
+                        <span className="text-muted-foreground"> by {ref.authors}</span>
+                        <p className="text-xs text-muted-foreground/80 mt-1">{ref.note}</p>
+                    </li>
+                ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
