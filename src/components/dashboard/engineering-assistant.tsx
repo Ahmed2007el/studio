@@ -165,7 +165,7 @@ export default function EngineeringAssistant({
   };
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col h-full">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">
             المهندس المساعد
@@ -174,8 +174,8 @@ export default function EngineeringAssistant({
             اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 overflow-hidden p-4">
-          <ScrollArea className="h-full" ref={scrollAreaRef}>
+        <CardContent className="flex flex-col flex-1 p-4 min-h-0">
+          <ScrollArea className="flex-1" ref={scrollAreaRef}>
             <div className="space-y-6 pr-4">
               {messages.map((message, index) => (
                 <div
