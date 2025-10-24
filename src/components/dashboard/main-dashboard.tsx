@@ -6,6 +6,7 @@ import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import {
   AlertCircle,
+  Share2,
 } from 'lucide-react';
 import {
   Card,
@@ -24,6 +25,8 @@ import {
   BookMarked
 } from 'lucide-react';
 import EngineeringAssistant from './engineering-assistant';
+import { Button } from '../ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export type AnalysisStep =
   | 'structuralSystem'
@@ -50,6 +53,7 @@ export default function MainDashboard() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleAnalysisUpdate = (
     data: Partial<SuggestStructuralSystemAndCodesOutput>
@@ -71,6 +75,48 @@ export default function MainDashboard() {
     setProjectAnalysis(null);
     setAnalysisStatus(null);
   };
+
+  const handleShare = () => {
+    if (!projectAnalysis) return;
+
+    const shareText = `
+تحليل مشروع: ${projectAnalysis.projectDescription}
+
+النظام الإنشائي المقترح:
+${projectAnalysis.suggestedStructuralSystem || 'N/A'}
+
+أكواد البناء المطبقة:
+${projectAnalysis.applicableBuildingCodes || 'N/A'}
+
+طريقة التنفيذ المثلى:
+${projectAnalysis.executionMethod || 'N/A'}
+
+التحديات المحتملة:
+${projectAnalysis.potentialChallenges || 'N/A'}
+
+نقاط التركيز الأساسية:
+${projectAnalysis.keyFocusAreas || 'N/A'}
+
+مراجع أكاديمية:
+${projectAnalysis.academicReferences?.map(ref => `- ${ref.title} by ${ref.authors}`).join('\n') || 'N/A'}
+
+تم إنشاؤه بواسطة مساعد الهندسة المدنية.
+    `.trim();
+
+    navigator.clipboard.writeText(shareText).then(() => {
+        toast({
+            title: "تم النسخ بنجاح!",
+            description: "تم نسخ نتائج التحليل إلى الحافظة.",
+        });
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        toast({
+            variant: "destructive",
+            title: "فشل النسخ",
+            description: "لم نتمكن من نسخ النتائج. يرجى المحاولة مرة أخرى.",
+        });
+    });
+  }
 
   const getStatusIcon = (status: 'pending' | 'loading' | 'complete') => {
     switch (status) {
@@ -193,11 +239,17 @@ export default function MainDashboard() {
          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
                 <Card className="bg-card">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-start justify-between">
+                  <div className='flex-1'>
                     <CardTitle className="font-headline text-xl">نتائج التحليل</CardTitle>
                     <CardDescription>{projectAnalysis.projectDescription}</CardDescription>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={handleShare}>
+                    <Share2 className="h-5 w-5" />
+                    <span className="sr-only">مشاركة</span>
+                  </Button>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 !pt-0">
                     {projectAnalysis.suggestedStructuralSystem && (
                     <ResultItem
                         icon={<GanttChartSquare />}
@@ -286,12 +338,12 @@ function ResultItem({
           <h4 className="font-headline text-base font-semibold mb-1">{title}</h4>
           {content && (
              <div
-             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground text-justify`}
+             className={`prose prose-lg dark:prose-invert max-w-none text-muted-foreground`}
            >
              {content.split('\n').map((paragraph, index) => {
                 const isListItem = paragraph.match(/^\s*(\d+\.|-|\*|[a-zA-Z]\))\s*/);
                 return (
-                  <p key={index} className={`mb-2 first:mt-0 ${isListItem ? 'p-0' : ''}`}>
+                  <p key={index} className={`mb-2 first:mt-0 text-justify text-base ${isListItem ? 'p-0' : ''}`}>
                     {paragraph}
                   </p>
                 );
@@ -316,3 +368,5 @@ function ResultItem({
     </div>
   );
 }
+
+    
