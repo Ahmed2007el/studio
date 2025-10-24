@@ -4,17 +4,20 @@ import {
   chatWithEngineeringAssistant,
   type EngineeringAssistantInput,
 } from '@/ai/flows/engineering-assistant';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, Sparkles, User } from 'lucide-react';
+import { Loader2, Sparkles, User, Volume2, PlayCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
+  audioUrl?: string;
+  audioLoading?: boolean;
 }
 
 interface EngineeringAssistantProps {
@@ -28,6 +31,7 @@ export default function EngineeringAssistant({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const audioRefs = useRef<{[key: number]: HTMLAudioElement | null}>({});
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -37,6 +41,13 @@ export default function EngineeringAssistant({
         });
     }
   }, [messages]);
+
+  const handlePlayAudio = (index: number) => {
+    const audio = audioRefs.current[index];
+    if (audio) {
+      audio.play();
+    }
+  }
 
 
   const handleSend = async () => {
@@ -53,12 +64,30 @@ export default function EngineeringAssistant({
         projectContext,
         history: newMessages,
       };
+      // Add a placeholder for the model's response
+      const modelMessagePlaceholder: Message = { role: 'model', content: '', audioLoading: true };
+      setMessages([...newMessages, modelMessagePlaceholder]);
+
       const result = await chatWithEngineeringAssistant(assistantInput);
       const assistantMessage: Message = {
         role: 'model',
         content: result.reply,
+        audioLoading: true
       };
-      setMessages([...newMessages, assistantMessage]);
+
+      // Update the placeholder with the actual content
+      setMessages(prev => prev.map((msg, i) => i === newMessages.length ? assistantMessage : msg));
+
+      // Generate speech
+      const ttsResult = await textToSpeech({ text: result.reply });
+      const finalAssistantMessage: Message = {
+        ...assistantMessage,
+        audioUrl: ttsResult.audio,
+        audioLoading: false
+      };
+      
+      setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
+
     } catch (error) {
       console.error(error);
       const errorMessage: Message = {
@@ -100,13 +129,39 @@ export default function EngineeringAssistant({
                     </Avatar>
                   )}
                   <div
-                    className={`max-w-prose rounded-lg p-3 ${
+                    className={`max-w-prose rounded-lg p-3 relative group ${
                       message.role === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    {message.content ? (
+                      <p className="text-sm">{message.content}</p>
+                    ) : (
+                      <Loader2 className="animate-spin text-primary" />
+                    )}
+
+                    {message.role === 'model' && message.content && (
+                       <div className="absolute top-2 left-2 flex items-center gap-2">
+                        {message.audioLoading ? (
+                            <Loader2 className="animate-spin text-primary/50 h-4 w-4" />
+                        ) : message.audioUrl ? (
+                          <>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-50 group-hover:opacity-100" onClick={() => handlePlayAudio(index)}>
+                              <PlayCircle className="h-4 w-4" />
+                            </Button>
+                            <audio 
+                                ref={el => audioRefs.current[index] = el}
+                                src={message.audioUrl} 
+                                autoPlay
+                                className="hidden" 
+                            />
+                          </>
+                        ) : (
+                            <Volume2 className="text-muted-foreground/50 h-4 w-4" />
+                        )}
+                        </div>
+                    )}
                   </div>
                   {message.role === 'user' && (
                      <Avatar className="w-8 h-8 border">
@@ -117,7 +172,7 @@ export default function EngineeringAssistant({
                   )}
                 </div>
               ))}
-               {loading && (
+               {loading && messages[messages.length-1]?.role === 'user' && (
                 <div className="flex items-start gap-4">
                      <Avatar className="w-8 h-8 border">
                       <AvatarFallback>
