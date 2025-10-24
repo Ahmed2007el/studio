@@ -387,7 +387,7 @@ ${
                         </CardHeader>
                     </Card>
                 )}
-                <ThreeDViewer />
+                <ThreeDViewer designData={currentAnalysis.conceptualDesign} />
             </TabsContent>
             </Tabs>
         </div>
