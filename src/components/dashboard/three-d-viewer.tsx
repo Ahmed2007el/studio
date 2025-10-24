@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
   Card,
   CardContent,
@@ -39,9 +39,9 @@ export default function ThreeDViewer() {
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.appendChild(renderer.domElement);
 
-    // Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    // Controls - Temporarily disabled to prevent server crash
+    // const controls = new OrbitControls(camera, renderer.domElement);
+    // controls.enableDamping = true;
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -71,7 +71,7 @@ export default function ThreeDViewer() {
     let animationFrameId: number;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      controls.update();
+      // controls.update(); // Temporarily disabled
       renderer.render(scene, camera);
     };
     animate();
@@ -93,7 +93,7 @@ export default function ThreeDViewer() {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
-      if (mountRef.current) {
+      if (mountRef.current && renderer.domElement) {
         mountRef.current.removeChild(renderer.domElement);
       }
       renderer.dispose();
