@@ -15,7 +15,7 @@ import {
   PlusCircle,
   Share2,
   TriangleAlert,
-  Cube,
+  Box,
   FileText,
   MessageCircle,
   BrainCircuit,
@@ -386,7 +386,7 @@ ${
               <TabsTrigger value="analysis"><FileText className="mr-2"/> التحليل الأولي</TabsTrigger>
               <TabsTrigger value="design"><BrainCircuit className="mr-2"/> التصميم المبدئي</TabsTrigger>
               <TabsTrigger value="simulation"><GanttChartSquare className="mr-2"/> المحاكاة الإنشائية</TabsTrigger>
-              <TabsTrigger value="viewer"><Cube className="mr-2"/> العارض ثلاثي الأبعاد</TabsTrigger>
+              <TabsTrigger value="viewer"><Box className="mr-2"/> العارض ثلاثي الأبعاد</TabsTrigger>
               <TabsTrigger value="assistant"><MessageCircle className="mr-2"/> المساعد الهندسي</TabsTrigger>
             </TabsList>
             <TabsContent value="analysis">
