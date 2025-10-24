@@ -407,18 +407,7 @@ ${
             </Tabs>
         </div>
         <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="assistant" className='h-full'>
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="assistant"><MessageCircle className="mr-2"/> المساعد الهندسي</TabsTrigger>
-                <TabsTrigger value="education"><GraduationCap className="mr-2"/> الدعم التعليمي</TabsTrigger>
-            </TabsList>
-            <TabsContent value="assistant" className='h-[calc(100%-40px)]'>
-              <EngineeringAssistant projectContext={currentAnalysis} />
-            </TabsContent>
-            <TabsContent value="education">
-              <EducationalSupport />
-            </TabsContent>
-          </Tabs>
+            <EngineeringAssistant projectContext={currentAnalysis} />
         </div>
       </div>
     );
@@ -551,9 +540,9 @@ function ResultItem({
             {title}
           </h4>
           {content && (
-            <div className="prose dark:prose-invert max-w-none text-muted-foreground prose-p:text-right" style={{ whiteSpace: 'pre-wrap' }}>
+            <div className="prose dark:prose-invert max-w-none text-muted-foreground">
               {content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-2 last:mb-0">
+                <p key={index} className="mb-2 last:mb-0 text-right">
                   {paragraph}
                 </p>
               ))}
