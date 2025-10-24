@@ -43,12 +43,12 @@ You are having a conversation with a user about a specific engineering project o
 
 **Project Context:**
 Here is the data for the project that has been previously analyzed. Use this as the primary source of truth when answering questions about this specific project.
-- Project Description: {{projectContext.projectDescription}}
-- Suggested Structural System: {{projectContext.suggestedStructuralSystem}}
-- Applicable Building Codes: {{projectContext.applicableBuildingCodes}}
-- Execution Method: {{projectContext.executionMethod}}
-- Potential Challenges: {{projectContext.potentialChallenges}}
-- Key Focus Areas: {{projectContext.keyFocusAreas}}
+- Project Description: {{#if projectContext.projectDescription}}{{projectContext.projectDescription}}{{else}}غير محدد{{/if}}
+- Suggested Structural System: {{#if projectContext.suggestedStructuralSystem}}{{projectContext.suggestedStructuralSystem}}{{else}}غير محدد{{/if}}
+- Applicable Building Codes: {{#if projectContext.applicableBuildingCodes}}{{projectContext.applicableBuildingCodes}}{{else}}غير محدد{{/if}}
+- Execution Method: {{#if projectContext.executionMethod}}{{projectContext.executionMethod}}{{else}}غير محدد{{/if}}
+- Potential Challenges: {{#if projectContext.potentialChallenges}}{{projectContext.potentialChallenges}}{{else}}غير محدد{{/if}}
+- Key Focus Areas: {{#if projectContext.keyFocusAreas}}{{projectContext.keyFocusAreas}}{{else}}غير محدد{{/if}}
 
 **Conversation History:**
 {{#each history}}

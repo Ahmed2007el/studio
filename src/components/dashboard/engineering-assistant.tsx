@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, Sparkles, User, Volume2, PlayCircle } from 'lucide-react';
+import { Loader2, Sparkles, User, Volume2, PlayCircle, Mic } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 
@@ -24,14 +24,26 @@ interface EngineeringAssistantProps {
   projectContext: any;
 }
 
+// Extend window type for webkitSpeechRecognition
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+
 export default function EngineeringAssistant({
   projectContext,
 }: EngineeringAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const audioRefs = useRef<{[key: number]: HTMLAudioElement | null}>({});
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -42,18 +54,69 @@ export default function EngineeringAssistant({
     }
   }, [messages]);
 
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'ar-SA'; // Set language to Arabic
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        handleSend(transcript); // Automatically send after transcription
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error', event.error);
+        setIsListening(false);
+      };
+      
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
   const handlePlayAudio = (index: number) => {
     const audio = audioRefs.current[index];
     if (audio) {
+      // Pause all other audio elements
+      Object.values(audioRefs.current).forEach(a => {
+        if (a && a !== audio) {
+          a.pause();
+          a.currentTime = 0;
+        }
+      });
       audio.play();
     }
   }
 
+  const handleVoiceInput = () => {
+    if (recognitionRef.current) {
+      if (isListening) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+      }
+    } else {
+      alert("متصفحك لا يدعم ميزة التعرف على الصوت.");
+    }
+  };
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+  const handleSend = async (textToSend?: string) => {
+    const messageText = typeof textToSend === 'string' ? textToSend : input;
+    if (!messageText.trim()) return;
+
+    const userMessage: Message = { role: 'user', content: messageText };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
@@ -62,7 +125,7 @@ export default function EngineeringAssistant({
     try {
       const assistantInput: EngineeringAssistantInput = {
         projectContext,
-        history: newMessages,
+        history: newMessages.map(({ audioUrl, audioLoading, ...rest}) => rest), // Remove audio fields for the API
       };
       // Add a placeholder for the model's response
       const modelMessagePlaceholder: Message = { role: 'model', content: '', audioLoading: true };
@@ -155,6 +218,9 @@ export default function EngineeringAssistant({
                                 src={message.audioUrl} 
                                 autoPlay
                                 className="hidden" 
+                                onEnded={() => {
+                                    // You can add logic here if needed when audio finishes
+                                }}
                             />
                           </>
                         ) : (
@@ -192,12 +258,16 @@ export default function EngineeringAssistant({
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="اكتب سؤالك هنا..."
+              placeholder={isListening ? "جاري الاستماع..." : "اكتب سؤالك أو استخدم المايكروفون..."}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              disabled={loading}
+              disabled={loading || isListening}
               className="flex-1"
             />
-            <Button onClick={handleSend} disabled={loading}>
+             <Button onClick={handleVoiceInput} disabled={loading} variant={isListening ? "destructive" : "outline"} size="icon">
+                <Mic className="h-5 w-5" />
+                <span className="sr-only">{isListening ? "إيقاف الاستماع" : "بدء الاستماع"}</span>
+            </Button>
+            <Button onClick={() => handleSend()} disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال'}
             </Button>
           </div>
