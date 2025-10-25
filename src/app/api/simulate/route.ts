@@ -6,7 +6,7 @@ const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'google/gemini-pro-1.5';
+const MODEL_NAME = 'google/gemini-flash-1.5';
 
 export async function POST(req: NextRequest) {
   try {
