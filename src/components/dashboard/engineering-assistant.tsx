@@ -25,7 +25,6 @@ export default function EngineeringAssistant({
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
-
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -41,38 +40,47 @@ export default function EngineeringAssistant({
     }
   }, [messages]);
 
-  useEffect(() => {
+  const initializeRecognition = () => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.lang = 'ar-SA';
-        recognitionRef.current.interimResults = false;
-        recognitionRef.current.maxAlternatives = 1;
+      if (SpeechRecognition && !recognitionRef.current) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'ar-SA';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
-        recognitionRef.current.onresult = (event: any) => {
+        recognition.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript;
-          setInput(transcript); // Only set the input, don't send automatically
+          setInput(transcript);
         };
 
-        recognitionRef.current.onend = () => {
+        recognition.onend = () => {
           setIsRecording(false);
         };
 
-        recognitionRef.current.onerror = (event: any) => {
+        recognition.onerror = (event: any) => {
           console.error("Speech recognition error", event.error);
           setIsRecording(false);
         };
+        
+        recognitionRef.current = recognition;
       }
     }
-  }, []);
+  };
 
   const handleToggleRecording = () => {
+    initializeRecognition(); // Ensure recognition is initialized on user interaction
+
+    if (!recognitionRef.current) {
+        console.error("Speech recognition not supported or initialized.");
+        return;
+    }
+
     if (isRecording) {
-      recognitionRef.current?.stop();
+      recognitionRef.current.stop();
     } else {
-      recognitionRef.current?.start();
+      recognitionRef.current.start();
       setIsRecording(true);
     }
   };
@@ -90,7 +98,6 @@ export default function EngineeringAssistant({
     setMessages([...newMessages, modelMessagePlaceholder]);
 
     try {
-      // Fetch text reply
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,7 +192,7 @@ export default function EngineeringAssistant({
                 variant={isRecording ? "destructive" : "outline"}
                 size="icon"
                 onClick={handleToggleRecording}
-                disabled={!recognitionRef.current || loading}
+                disabled={loading}
             >
                 <Mic className="h-5 w-5" />
                 <span className="sr-only">{isRecording ? "إيقاف التسجيل" : "بدء التسجيل"}</span>
