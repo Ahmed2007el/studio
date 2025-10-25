@@ -6,7 +6,7 @@ const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'google/gemini-flash-1.5';
+const MODEL_NAME = 'openai/gpt-4o';
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
     const responseJson = JSON.parse(responseText);
     return NextResponse.json(responseJson);
 
-  } catch (error: any) {
+  } catch (error: any)
+   {
     console.error('Error in simulate API:', error);
     const errorMessage = error.error?.message || error.message || 'Failed to generate content';
     return NextResponse.json(
