@@ -25,7 +25,9 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
 
   useEffect(() => {
     const mount = mountRef.current;
-    if (!mount) return;
+    if (!mount || !designData || !designData.columnWidth || !designData.columnHeight) {
+        return;
+    }
 
     let animationFrameId: number;
     let controls: any;
@@ -44,17 +46,9 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
         }
     };
     
-    cleanup();
-    
-    // If no design data, or no dimensions, don't render the scene
-    if (!designData || !designData.columnWidth || !designData.columnHeight) {
-        const placeholder = document.createElement('div');
-        placeholder.className = "flex items-center justify-center h-full text-muted-foreground";
-        const p = document.createElement('p');
-        p.textContent = "يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.";
-        placeholder.appendChild(p);
-        mount.appendChild(placeholder);
-        return;
+    // Clear any previous render
+    while(mount.firstChild) {
+        mount.removeChild(mount.firstChild);
     }
 
     // Convert cm to meters
@@ -192,6 +186,11 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
           ref={mountRef}
           className="h-[500px] w-full rounded-lg border bg-card"
         >
+          {(!designData || !designData.columnWidth || !designData.columnHeight) && (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+                <p>يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.</p>
+            </div>
+          )}
         </div>
       </CardContent>
       {designData && (
