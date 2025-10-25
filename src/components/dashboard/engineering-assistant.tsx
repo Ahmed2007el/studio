@@ -42,46 +42,45 @@ export default function EngineeringAssistant({
   }, [messages]);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.lang = 'ar-SA';
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.maxAlternatives = 1;
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.lang = 'ar-SA';
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.maxAlternatives = 1;
 
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        handleSend(transcript); 
-      };
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setInput(transcript); // Only set the input, don't send automatically
+        };
 
-      recognitionRef.current.onend = () => {
-        setIsRecording(false);
-      };
+        recognitionRef.current.onend = () => {
+          setIsRecording(false);
+        };
 
-      recognitionRef.current.onerror = (event: any) => {
-        console.error("Speech recognition error", event.error);
-        setIsRecording(false);
-      };
+        recognitionRef.current.onerror = (event: any) => {
+          console.error("Speech recognition error", event.error);
+          setIsRecording(false);
+        };
+      }
     }
   }, []);
 
   const handleToggleRecording = () => {
     if (isRecording) {
       recognitionRef.current?.stop();
-      setIsRecording(false);
     } else {
       recognitionRef.current?.start();
       setIsRecording(true);
     }
   };
 
-  const handleSend = async (textToSend?: string) => {
-    const messageText = typeof textToSend === 'string' ? textToSend : input;
-    if (!messageText.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: messageText };
+    const userMessage: Message = { role: 'user', content: input };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
@@ -191,7 +190,7 @@ export default function EngineeringAssistant({
                 <Mic className="h-5 w-5" />
                 <span className="sr-only">{isRecording ? "إيقاف التسجيل" : "بدء التسجيل"}</span>
             </Button>
-            <Button onClick={() => handleSend()} disabled={loading || !input.trim()}>
+            <Button onClick={handleSend} disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال'}
             </Button>
           </div>
