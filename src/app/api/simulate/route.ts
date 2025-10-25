@@ -13,16 +13,16 @@ export async function POST(req: NextRequest) {
     const input = await req.json();
 
     const outputSchema = {
-        summary: "string (A brief summary of the structural analysis results in Arabic)",
+        summary: "string (A detailed summary of the structural analysis results, highlighting critical elements and potential concerns in Arabic)",
         analysisResults: [
           {
-            element: "string (e.g., 'Ground Floor Column')",
+            element: "string (e.g., 'Ground Floor Column C1')",
             moment: "number (Maximum bending moment in kNm)",
             shear: "number (Maximum shear force in kN)",
             axial: "number (Maximum axial force in kN)"
           },
           {
-            element: "string (e.g., 'First Floor Beam')",
+            element: "string (e.g., 'First Floor Beam B1')",
             moment: "number",
             shear: "number",
             axial: "number"
@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
         ]
       };
       
-      const prompt = `You are an expert structural analyst. Perform a simplified structural analysis based on the provided design data. Your response must be in clear, well-structured Arabic.
+      const prompt = `You are an expert structural analyst performing a simplified, yet realistic, structural analysis based on the provided conceptual design data. Your response must be in clear, professional, and well-structured Arabic.
       
-      **Project & Design Data:**
+      **Project & Conceptual Design Data:**
       - Project Description: ${input.projectDescription}
       - Structural System: ${input.structuralSystemSuggestion}
       - Column Section: ${input.columnCrossSection}
@@ -44,10 +44,18 @@ export async function POST(req: NextRequest) {
       - Seismic Load: ${input.seismicLoad}
       
       **Task:**
-      1.  Provide a **summary** of the analysis, highlighting the most critical forces and any potential concerns.
-      2.  Fill out the **analysisResults** array with estimated maximum forces for at least two representative elements (e.g., a critical column and a critical beam). The values should be realistic estimations based on the provided loads and dimensions.
+      Perform a conceptual structural analysis. The estimations should be realistic and reflect the principles of structural mechanics.
+
+      1.  **Summary:**
+          *   Provide a **detailed summary** of the analysis.
+          *   Highlight the elements subjected to the most critical forces.
+          *   Mention any potential concerns, such as high shear forces in beams or high bending moments in columns, and suggest what to look out for in the detailed design phase.
+
+      2.  **Analysis Results:**
+          *   Fill out the **analysisResults** array with your estimated maximum forces (Moment, Shear, Axial) for at least two representative critical elements (e.g., a ground-floor corner column and a first-floor long-span beam).
+          *   The values should be realistic estimations based on the provided loads, dimensions, and standard engineering approximation methods.
       
-      Your output MUST be a valid JSON object matching this schema:
+      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
       ${JSON.stringify(outputSchema, null, 2)}
       `;
       
@@ -69,7 +77,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any)
    {
     console.error('Error in simulate API:', error);
-    const errorMessage = error.error?.message || error.message || 'Failed to generate content';
+    const errorMessage = error.message || 'Failed to generate content';
     return NextResponse.json(
       {error: errorMessage},
       {status: error.status || 500}

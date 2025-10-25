@@ -10,35 +10,58 @@ const MODEL_NAME = 'openai/gpt-3.5-turbo';
 
 async function handlePreliminaryAnalysis(projectDescription: string, projectLocation: string) {
     const outputSchema = {
-        suggestedStructuralSystem: "string",
-        applicableBuildingCodes: "string",
-        executionMethod: "string",
-        potentialChallenges: "string",
-        keyFocusAreas: "string",
+        suggestedStructuralSystem: "string (Detailed explanation and justification)",
+        applicableBuildingCodes: "string (List of codes with specific relevant chapters or sections)",
+        executionMethod: "string (Detailed description of the methodology and machinery)",
+        potentialChallenges: "string (Bulleted list with detailed explanation for each challenge)",
+        keyFocusAreas: "string (Bulleted list with detailed explanation for each area)",
         academicReferences: [
           {
             title: "string",
             authors: "string",
-            note: "string",
-            searchLink: "string (must be a valid URL)"
+            note: "string (Brief summary of relevance)",
+            searchLink: "string (A valid Google search URL)"
           }
         ]
     };
 
-    const prompt = `You are an expert civil engineering consultant providing a detailed and complete analysis for a project. Your response must be in clear, well-structured Arabic.
+    const prompt = `You are a highly experienced Principal Structural Engineer with 30 years of expertise in designing complex structures worldwide. Your task is to provide a comprehensive and highly detailed preliminary analysis for a new project. Your response must be in clear, professional, and well-structured Arabic.
 
-    Project Description: ${projectDescription}
-    Project Location: ${projectLocation || 'Not specified, please infer from description.'}
+    **Project Description:**
+    ${projectDescription}
 
-    Your task is to generate a comprehensive preliminary analysis. Provide a detailed response for ALL of the following sections in the output schema:
-    1.  **suggestedStructuralSystem**: Provide a detailed rationale for your choice of structural system.
-    2.  **applicableBuildingCodes**: List all relevant national and international codes.
-    3.  **executionMethod**: Describe the best construction methodology with justification.
-    4.  **potentialChallenges**: List at least 3 potential challenges and common mistakes.
-    5.  **keyFocusAreas**: List at least 3 critical points to focus on during design and construction.
-    6.  **academicReferences**: List at least 3 relevant academic references with titles, authors, notes, and valid Google search URLs in the format 'https://www.google.com/search?q=...'.
+    **Project Location:**
+    ${projectLocation || 'Not specified, please infer from description if possible.'}
 
-    Your output MUST be a valid JSON object matching this schema:
+    **Your Detailed Analysis Must Include:**
+
+    1.  **Suggested Structural System:**
+        *   Propose the most suitable structural system (e.g., Moment Resisting Frame, Shear Wall System, etc.).
+        *   Provide a **detailed justification** for your choice, considering factors like building height, soil conditions (assume typical for the location if not specified), seismicity, and architectural requirements.
+        *   Explain the advantages and disadvantages of this system for this specific project.
+
+    2.  **Applicable Building Codes:**
+        *   List all relevant national and international building codes (e.g., SBC, ASCE 7, ACI 318, Eurocode).
+        *   For each code, mention the **specific chapters or sections** that are most critical for this project (e.g., "SBC 301 for loads," "ACI 318 Chapter 18 for seismic design").
+
+    3.  **Execution Method:**
+        *   Describe the optimal construction methodology in detail (e.g., cast-in-situ, precast, top-down construction).
+        *   Justify your choice based on project scale, timeline, and local construction practices.
+        *   List the key machinery and equipment required.
+
+    4.  **Potential Challenges:**
+        *   Identify at least 3-4 significant potential challenges (e.g., complex formwork, dewatering, long-span beams).
+        *   For each challenge, provide a detailed explanation of why it's a risk and suggest a proactive mitigation strategy.
+
+    5.  **Key Focus Areas:**
+        *   Identify at least 3-4 critical areas that require special attention during the design and construction phases (e.g., foundation-soil interaction, slab deflection control, seismic detailing).
+        *   Explain the importance of each focus area in detail.
+
+    6.  **Academic References:**
+        *   List at least 3 highly relevant and modern academic papers or textbooks.
+        *   For each reference, provide the title, authors, a brief note on its relevance, and a valid Google search URL in the format 'https://www.google.com/search?q=...'.
+
+    Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
     ${JSON.stringify(outputSchema, null, 2)}
     `;
 
@@ -58,37 +81,40 @@ async function handlePreliminaryAnalysis(projectDescription: string, projectLoca
 
 async function handleConceptualDesign(input: any) {
     const outputSchema = {
-        structuralSystemSuggestion: "string (based on the original suggestion but potentially refined)",
-        columnCrossSection: "string (e.g., '600x600 mm')",
-        beamCrossSection: "string (e.g., '300x700 mm')",
-        foundationDesign: "string (e.g., 'Raft foundation, 800mm thick')",
-        deadLoad: "string (e.g., '12 kN/m²')",
-        liveLoad: "string (e.g., '3 kN/m²')",
-        windLoad: "string (e.g., '1.5 kPa')",
-        seismicLoad: "string (e.g., 'Zone 2B, Importance Factor 1.2')",
+        structuralSystemSuggestion: "string (Refined suggestion with justification)",
+        columnCrossSection: "string (e.g., '600x600 mm', with a brief justification)",
+        beamCrossSection: "string (e.g., '300x700 mm', with a brief justification)",
+        foundationDesign: "string (e.g., 'Raft foundation, 800mm thick, based on assumed soil bearing capacity of X')",
+        deadLoad: "string (e.g., '12 kN/m²', with a breakdown of components)",
+        liveLoad: "string (e.g., '3 kN/m²', based on the specified code for residential areas)",
+        windLoad: "string (e.g., '1.5 kPa', based on basic wind speed for the location and building height)",
+        seismicLoad: "string (e.g., 'Zone 2B, Importance Factor 1.2, SDS = X, SD1 = Y')",
         columnWidth: "number (width of column in cm)",
         columnHeight: "number (height of column in cm)",
       };
     
-      const prompt = `You are an expert civil engineering consultant. Based on the following project details, generate a conceptual design. Your response must be in clear, well-structured Arabic.
+      const prompt = `You are an expert Principal Structural Engineer. Based on the following project details, generate a detailed conceptual design. Your response must be in clear, professional, and well-structured Arabic.
     
-      Project Description: ${input.projectDescription}
-      Location: ${input.location}
-      Selected Building Code: ${input.buildingCode}
+      **Project & Analysis Data:**
+      *   Project Description: ${input.projectDescription}
+      *   Location: ${input.location}
+      *   Selected Building Code: ${input.buildingCode}
     
-      Your task is to generate the conceptual design details. Provide a detailed response for ALL of the following sections in the output schema:
-      1.  **structuralSystemSuggestion**: Refine or confirm the structural system choice.
-      2.  **columnCrossSection**: Suggest a typical preliminary column size.
-      3.  **beamCrossSection**: Suggest a typical preliminary beam size.
-      4.  **foundationDesign**: Suggest a suitable foundation system.
-      5.  **deadLoad**: Estimate the dead load.
-      6.  **liveLoad**: Estimate the live load according to the code.
-      7.  **windLoad**: Estimate the wind load.
-      8.  **seismicLoad**: Estimate the seismic load parameters.
-      9.  **columnWidth**: Extract the width of the column in centimeters.
-      10. **columnHeight**: Extract the height (depth) of the column in centimeters.
+      **Your Task:**
+      Generate the conceptual design details. Provide a detailed, justified response for ALL of the following sections. The estimations should be based on sound engineering principles and the selected building code.
+
+      1.  **Structural System Suggestion:** Refine or confirm the structural system choice with a brief justification.
+      2.  **Column Cross Section:** Suggest a typical preliminary column size. Justify your choice based on estimated axial loads and architectural considerations.
+      3.  **Beam Cross Section:** Suggest a typical preliminary beam size. Justify based on typical spans and loads.
+      4.  **Foundation Design:** Suggest a suitable foundation system. State any assumptions made (e.g., assumed soil bearing capacity).
+      5.  **Dead Load (DL):** Estimate the superimposed dead load (Flooring, partitions, MEP) and self-weight of typical elements to arrive at a total dead load per unit area. Show a brief breakdown.
+      6.  **Live Load (LL):** Estimate the live load according to the specified building code for the assumed occupancy (e.g., residential, office). Cite the code category if possible.
+      7.  **Wind Load (WL):** Estimate the basic wind load parameters based on the project's location and height.
+      8.  **Seismic Load (EL):** Estimate the key seismic parameters (e.g., Seismic Zone, Importance Factor, and spectral acceleration parameters like SDS/SD1) based on the selected code and location.
+      9.  **Column Width:** Extract the numerical width of the column in centimeters.
+      10. **Column Height:** Extract the numerical height (depth) of the column in centimeters.
     
-      Your output MUST be a valid JSON object matching this schema:
+      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
       ${JSON.stringify(outputSchema, null, 2)}
       `;
 
@@ -131,7 +157,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error in generate API:', error);
-    const errorMessage = error.error?.message || error.message || 'Failed to generate content';
+    const errorMessage = error.message || 'Failed to generate content';
     return NextResponse.json(
       {error: errorMessage},
       {status: error.status || 500}
