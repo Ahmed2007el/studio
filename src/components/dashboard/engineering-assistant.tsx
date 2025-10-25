@@ -55,6 +55,21 @@ export default function EngineeringAssistant({
   }, [messages]);
 
   useEffect(() => {
+    // Auto-play audio for the last message if it's from the model and has a URL
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === 'model' && lastMessage.audioUrl && !lastMessage.audioLoading) {
+      const audioIndex = messages.length - 1;
+      const audio = audioRefs.current[audioIndex];
+      if (audio) {
+        // A small delay can help ensure the audio element is ready
+        setTimeout(() => handlePlayAudio(audioIndex), 100);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
+
+
+  useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
@@ -95,7 +110,7 @@ export default function EngineeringAssistant({
           a.currentTime = 0;
         }
       });
-      audio.play();
+      audio.play().catch(e => console.error("Audio play failed:", e));
     }
   }
 
@@ -160,12 +175,16 @@ export default function EngineeringAssistant({
       // Generate speech
       try {
         const ttsResult = await textToSpeech({ text: result.reply });
-        const finalAssistantMessage: Message = {
-            ...assistantMessage,
-            audioUrl: ttsResult.audio,
-            audioLoading: false
-        };
-        setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
+        if (ttsResult.audio) {
+            const finalAssistantMessage: Message = {
+                ...assistantMessage,
+                audioUrl: ttsResult.audio,
+                audioLoading: false
+            };
+            setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
+        } else {
+            throw new Error("TTS generation returned empty audio.");
+        }
       } catch (ttsError) {
           console.error("TTS generation failed:", ttsError);
           const messageWithError: Message = {
@@ -196,7 +215,7 @@ export default function EngineeringAssistant({
             المهندس المساعد
           </CardTitle>
           <CardDescription>
-            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة Gemini 1.5 Pro)
+            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة openai/gpt-3.5-turbo)
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 p-4 min-h-0">
