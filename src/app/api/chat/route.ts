@@ -6,7 +6,7 @@ const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'google/gemini-2.0-flash-preview';
+const MODEL_NAME = 'google/gemini-pro';
 
 function buildSystemPrompt(projectContext: any): string {
   const context = `
