@@ -3,12 +3,12 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'gpt-4o';
+const MODEL_NAME = 'google/gemini-1.5-pro-latest';
 
 function buildSystemPrompt(projectContext: any): string {
-  // Create a detailed system prompt with the project context
   const context = `
 You are an expert Civil Engineering Assistant. Your name is "المهندس المساعد". Your personality is helpful, professional, and highly knowledgeable. Your responses must always be in clear, well-structured Arabic.
 
@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
         content: systemPrompt,
       },
       ...history.map((msg: {role: 'user' | 'model'; content: string}) => {
-        // The OpenAI API uses 'assistant' for the model's role
         return {
           role: msg.role === 'model' ? 'assistant' : 'user',
           content: msg.content,
@@ -64,8 +63,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({reply});
   } catch (error: any) {
     console.error('Error in chat API:', error);
+    const errorMessage = error.response ? await error.response.json() : { message: error.message };
     return NextResponse.json(
-      {error: error.message || 'An unknown error occurred'},
+      {error: errorMessage.error?.message || 'An unknown error occurred'},
       {status: 500}
     );
   }

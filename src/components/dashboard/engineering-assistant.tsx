@@ -186,7 +186,7 @@ export default function EngineeringAssistant({
             المهندس المساعد
           </CardTitle>
           <CardDescription>
-            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة GPT-4o)
+            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة Gemini 1.5 Pro)
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 p-4 min-h-0">
@@ -231,7 +231,6 @@ export default function EngineeringAssistant({
                             <audio 
                                 ref={el => audioRefs.current[index] = el}
                                 src={message.audioUrl} 
-                                autoPlay
                                 className="hidden" 
                             />
                           </>

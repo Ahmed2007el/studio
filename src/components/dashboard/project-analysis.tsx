@@ -1,6 +1,6 @@
 'use client';
 
-import { suggestStructuralSystemAndCodes } from '@/ai/flows/project-type-and-code-suggestion';
+import { useState } from 'react';
 import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,10 +22,10 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
-import type { AnalysisStatus, AnalysisStep } from './main-dashboard';
+import type { AnalysisStatus } from './main-dashboard';
 
 const FormSchema = z.object({
-  projectDescription: z.string().min(5, 'يرجى تقديم وصف موجز للمشروع.'),
+  projectDescription: z.string().min(10, 'يرجى تقديم وصف لا يقل عن 10 أحرف.'),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -78,11 +78,19 @@ export default function ProjectAnalysis({
     onStatusUpdate(initialStatus);
 
     try {
-      const result = await suggestStructuralSystemAndCodes({
-        projectDescription: data.projectDescription,
-        projectLocation: '', // Location is derived by AI if needed
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectDescription: data.projectDescription, projectLocation: '' }),
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
       onAnalysisUpdate(result);
 
       const finalStatus: AnalysisStatus = {
@@ -95,10 +103,9 @@ export default function ProjectAnalysis({
       };
       onStatusUpdate(finalStatus);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      onError('حدث خطأ أثناء إنشاء التحليل. قد يكون السبب هو تجاوز حدود الاستخدام. يرجى المحاولة مرة أخرى لاحقًا.');
-      // Reset status on error
+      onError(error.message || 'حدث خطأ أثناء إنشاء التحليل. يرجى المحاولة مرة أخرى.');
       const errorStatus: AnalysisStatus = {
         structuralSystem: 'pending',
         buildingCodes: 'pending',

@@ -1,7 +1,12 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {GoogleGenerativeAI, HarmCategory, HarmBlockThreshold} from '@google/generative-ai';
+import OpenAI from 'openai';
 
-const MODEL_NAME = 'gemini-pro';
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
+});
+
+const MODEL_NAME = 'google/gemini-1.5-pro-latest';
 
 export async function POST(req: NextRequest) {
   const {projectDescription, projectLocation} = await req.json();
@@ -10,19 +15,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({error: 'Project description is required'}, {status: 400});
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({error: 'API key not found'}, {status: 500});
-  }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: MODEL_NAME,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.3,
-    },
-  });
+  const outputSchema = {
+    suggestedStructuralSystem: "string",
+    applicableBuildingCodes: "string",
+    executionMethod: "string",
+    potentialChallenges: "string",
+    keyFocusAreas: "string",
+    academicReferences: [
+      {
+        title: "string",
+        authors: "string",
+        note: "string",
+        searchLink: "string (must be a valid URL)"
+      }
+    ]
+  };
 
   const prompt = `You are an expert civil engineering consultant providing a detailed and complete analysis for a project. Your response must be in clear, well-structured Arabic.
 
@@ -38,32 +45,29 @@ Your task is to generate a comprehensive preliminary analysis. Provide a detaile
 6.  **academicReferences**: List at least 3 relevant academic references with titles, authors, notes, and valid Google search URLs in the format 'https://www.google.com/search?q=...'.
 
 Your output MUST be a valid JSON object matching this schema:
-{
-  "suggestedStructuralSystem": "string",
-  "applicableBuildingCodes": "string",
-  "executionMethod": "string",
-  "potentialChallenges": "string",
-  "keyFocusAreas": "string",
-  "academicReferences": [
-    {
-      "title": "string",
-      "authors": "string",
-      "note": "string",
-      "searchLink": "string"
-    }
-  ]
-}
+${JSON.stringify(outputSchema, null, 2)}
 `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    const response = await openai.chat.completions.create({
+        model: MODEL_NAME,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+    });
+    
+    const responseText = response.choices[0].message?.content;
+    if (!responseText) {
+        throw new Error("Empty response from AI");
+    }
+
     const responseJson = JSON.parse(responseText);
     return NextResponse.json(responseJson);
+
   } catch (error: any) {
     console.error('Error generating content:', error);
+    const errorMessage = error.response ? await error.response.json() : { message: error.message };
     return NextResponse.json(
-      {error: error.message || 'Failed to generate content'},
+      {error: errorMessage.error?.message || 'Failed to generate content'},
       {status: 500}
     );
   }
