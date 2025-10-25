@@ -48,8 +48,8 @@ export interface ConceptualDesignOutput {
   
 
 const FormSchema = z.object({
-  buildingCode: z.enum(['ACI', 'BS', 'UPC']),
-});
+    buildingCode: z.enum(['ACI', 'BS', 'UPC']).optional(),
+  });
 
 type FormValues = z.infer<typeof FormSchema>;
 
@@ -92,7 +92,7 @@ export default function ConceptualDesign({
     const input = {
       projectDescription: projectAnalysis.projectDescription,
       location: projectAnalysis.projectLocation,
-      buildingCode: data.buildingCode,
+      buildingCode: data.buildingCode || 'ACI', // Default to ACI if not selected
     };
     try {
         const response = await fetch('/api/generate', {
@@ -141,7 +141,7 @@ export default function ConceptualDesign({
               name="buildingCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>كود البناء</FormLabel>
+                  <FormLabel>كود البناء (اختياري)</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -149,7 +149,7 @@ export default function ConceptualDesign({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر كود بناء" />
+                        <SelectValue placeholder="اختر كود بناء (الافتراضي: ACI)" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
