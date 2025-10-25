@@ -1,20 +1,16 @@
 'use client';
 
-import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, Sparkles, User, PlayCircle, Mic } from 'lucide-react';
+import { Loader2, Sparkles, User, Mic } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
-  audioUrl?: string;
-  audioLoading?: boolean;
-  audioError?: boolean;
 }
 
 interface EngineeringAssistantProps {
@@ -38,7 +34,6 @@ export default function EngineeringAssistant({
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const audioRefs = useRef<{[key: number]: HTMLAudioElement | null}>({});
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
 
@@ -53,21 +48,6 @@ export default function EngineeringAssistant({
         }
     }
   }, [messages]);
-
-  useEffect(() => {
-    // Auto-play audio for the last message if it's from the model and has a URL
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === 'model' && lastMessage.audioUrl && !lastMessage.audioLoading) {
-      const audioIndex = messages.length - 1;
-      const audio = audioRefs.current[audioIndex];
-      if (audio) {
-        // A small delay can help ensure the audio element is ready
-        setTimeout(() => handlePlayAudio(audioIndex), 100);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]);
-
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -100,20 +80,6 @@ export default function EngineeringAssistant({
     }
   }, []);
 
-  const handlePlayAudio = (index: number) => {
-    const audio = audioRefs.current[index];
-    if (audio) {
-      // Pause all other audio elements
-      Object.values(audioRefs.current).forEach(a => {
-        if (a && a !== audio) {
-          a.pause();
-          a.currentTime = 0;
-        }
-      });
-      audio.play().catch(e => console.error("Audio play failed:", e));
-    }
-  }
-
   const handleVoiceInput = () => {
     if (recognitionRef.current) {
       if (isListening) {
@@ -139,7 +105,7 @@ export default function EngineeringAssistant({
     setLoading(true);
     
     // Add a placeholder for the model's response
-    const modelMessagePlaceholder: Message = { role: 'model', content: '', audioLoading: true };
+    const modelMessagePlaceholder: Message = { role: 'model', content: '' };
     setMessages([...newMessages, modelMessagePlaceholder]);
 
 
@@ -151,8 +117,7 @@ export default function EngineeringAssistant({
         },
         body: JSON.stringify({
           projectContext,
-          // We only need to send the history, not the audio data
-          history: newMessages.map(({ audioUrl, audioLoading, ...rest}) => rest), 
+          history: newMessages,
         }),
       });
 
@@ -166,40 +131,10 @@ export default function EngineeringAssistant({
       const assistantMessage: Message = {
         role: 'model',
         content: result.reply,
-        audioLoading: true
       };
 
       // Update the placeholder with the actual content
       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? assistantMessage : msg));
-
-      // Generate speech
-      try {
-        const ttsResult = await textToSpeech({ text: result.reply });
-        if (ttsResult.audio) {
-            const finalAssistantMessage: Message = {
-                ...assistantMessage,
-                audioUrl: ttsResult.audio,
-                audioLoading: false
-            };
-            setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
-        } else {
-            // Handle empty audio gracefully by setting an error state on the message
-            const messageWithError: Message = {
-                ...assistantMessage,
-                audioLoading: false,
-                audioError: true,
-            };
-            setMessages(prev => prev.map((msg, i) => i === newMessages.length ? messageWithError : msg));
-        }
-      } catch (ttsError) {
-          console.error("TTS generation failed:", ttsError);
-          const messageWithError: Message = {
-              ...assistantMessage,
-              audioLoading: false,
-              audioError: true,
-          };
-          setMessages(prev => prev.map((msg, i) => i === newMessages.length ? messageWithError : msg));
-      }
 
     } catch (error: any) {
       console.error(error);
@@ -252,25 +187,6 @@ export default function EngineeringAssistant({
                       <p className="text-sm">{message.content}</p>
                     ) : (
                       <Loader2 className="animate-spin text-primary" />
-                    )}
-
-                    {message.role === 'model' && message.content && (
-                       <div className="absolute top-2 left-2 flex items-center gap-2">
-                        {message.audioLoading ? (
-                            <Loader2 className="animate-spin text-primary/50 h-4 w-4" />
-                        ) : message.audioUrl && !message.audioError ? (
-                          <>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-50 group-hover:opacity-100" onClick={() => handlePlayAudio(index)}>
-                              <PlayCircle className="h-4 w-4" />
-                            </Button>
-                            <audio 
-                                ref={el => audioRefs.current[index] = el}
-                                src={message.audioUrl} 
-                                className="hidden" 
-                            />
-                          </>
-                        ) : null}
-                        </div>
                     )}
                   </div>
                   {message.role === 'user' && (
