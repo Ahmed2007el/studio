@@ -6,7 +6,7 @@ const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'google/gemini-pro';
+const MODEL_NAME = 'openai/gpt-3.5-turbo';
 
 async function handlePreliminaryAnalysis(projectDescription: string, projectLocation: string) {
     const outputSchema = {
