@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
@@ -17,25 +17,14 @@ interface EngineeringAssistantProps {
   projectContext: any;
 }
 
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
-
-
 export default function EngineeringAssistant({
   projectContext,
 }: EngineeringAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -48,43 +37,6 @@ export default function EngineeringAssistant({
         }
     }
   }, [messages]);
-
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.lang = 'ar-SA';
-      recognition.interimResults = false;
-
-      recognition.onstart = () => setIsListening(true);
-      recognition.onend = () => setIsListening(false);
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error', event.error);
-        setIsListening(false);
-      };
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        handleSend(transcript);
-      };
-      
-      recognitionRef.current = recognition;
-    }
-  }, []);
-
-  const handleVoiceInput = () => {
-    if (recognitionRef.current) {
-      if (isListening) {
-        recognitionRef.current.stop();
-      } else {
-        setInput('');
-        recognitionRef.current.start();
-      }
-    } else {
-      alert("متصفحك لا يدعم ميزة التعرف على الصوت.");
-    }
-  };
 
   const handleSend = async (textToSend?: string) => {
     const messageText = typeof textToSend === 'string' ? textToSend : input;
@@ -135,7 +87,7 @@ export default function EngineeringAssistant({
             المهندس المساعد
           </CardTitle>
           <CardDescription>
-            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام.
+            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (ميزة الصوت معطلة حالياً)
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 p-4 min-h-0">
@@ -163,7 +115,7 @@ export default function EngineeringAssistant({
                     }`}
                   >
                     {message.content ? (
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     ) : (
                       <Loader2 className="animate-spin text-primary" />
                     )}
@@ -185,15 +137,11 @@ export default function EngineeringAssistant({
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isListening ? "جاري الاستماع..." : "اكتب سؤالك أو استخدم المايكروفون..."}
+              placeholder="اكتب سؤالك..."
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              disabled={loading || isListening}
+              disabled={loading}
               className="flex-1"
             />
-             <Button onClick={handleVoiceInput} disabled={loading} variant={isListening ? "destructive" : "outline"} size="icon">
-                <Mic className="h-5 w-5" />
-                <span className="sr-only">{isListening ? "إيقاف الاستماع" : "بدء الاستماع"}</span>
-            </Button>
             <Button onClick={() => handleSend()} disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال'}
             </Button>
