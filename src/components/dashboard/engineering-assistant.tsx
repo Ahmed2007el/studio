@@ -52,7 +52,7 @@ export default function EngineeringAssistant({
 
         recognition.onresult = (event: any) => {
           const transcript = event.results[0][0].transcript;
-          setInput(transcript);
+          sendMessage(transcript);
         };
 
         recognition.onend = () => {
@@ -70,7 +70,7 @@ export default function EngineeringAssistant({
   };
 
   const handleToggleRecording = () => {
-    initializeRecognition(); // Ensure recognition is initialized on user interaction
+    initializeRecognition(); 
 
     if (!recognitionRef.current) {
         console.error("Speech recognition not supported or initialized.");
@@ -85,13 +85,13 @@ export default function EngineeringAssistant({
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const sendMessage = async (messageContent: string) => {
+    if (!messageContent.trim()) return;
 
-    const userMessage: Message = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: messageContent };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
-    setInput('');
+    setInput(''); // Clear input field after sending
     setLoading(true);
     
     const modelMessagePlaceholder: Message = { role: 'model', content: '' };
@@ -125,6 +125,10 @@ export default function EngineeringAssistant({
       setLoading(false);
     }
   };
+
+  const handleSendClick = () => {
+      sendMessage(input);
+  }
 
   return (
     <Card className="flex flex-col h-full">
@@ -184,7 +188,7 @@ export default function EngineeringAssistant({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="اكتب سؤالك أو استخدم الميكروفون..."
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendClick()}
               disabled={loading}
               className="flex-1"
             />
@@ -197,7 +201,7 @@ export default function EngineeringAssistant({
                 <Mic className="h-5 w-5" />
                 <span className="sr-only">{isRecording ? "إيقاف التسجيل" : "بدء التسجيل"}</span>
             </Button>
-            <Button onClick={handleSend} disabled={loading || !input.trim()}>
+            <Button onClick={handleSendClick} disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="animate-spin" /> : 'إرسال'}
             </Button>
           </div>
