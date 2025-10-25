@@ -1,12 +1,7 @@
 'use client';
 
-import {
-  simulateStructuralAnalysis,
-  type SimulateStructuralAnalysisOutput,
-  type SimulateStructuralAnalysisInput,
-} from '@/ai/flows/simulate-structural-analysis';
-import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preliminary-designs';
 import { useState } from 'react';
+import type { ConceptualDesignOutput } from './conceptual-design';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -30,10 +25,20 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
 import { Skeleton } from '../ui/skeleton';
 
+export interface StructuralSimulationOutput {
+    summary: string;
+    analysisResults: {
+        element: string;
+        moment: number;
+        shear: number;
+        axial: number;
+    }[];
+}
+
 interface StructuralSimulationProps {
-  designData: GeneratePreliminaryDesignsOutput & { projectDescription: string };
-  onSimulationComplete: (data: SimulateStructuralAnalysisOutput) => void;
-  initialData: SimulateStructuralAnalysisOutput | null;
+  designData: ConceptualDesignOutput & { projectDescription: string };
+  onSimulationComplete: (data: StructuralSimulationOutput) => void;
+  initialData: StructuralSimulationOutput | null;
 }
 
 const chartConfig = {
@@ -62,27 +67,30 @@ export default function StructuralSimulation({
 
   const handleSimulation = async () => {
     setLoading(true);
-    const input: SimulateStructuralAnalysisInput = {
-      projectDescription: designData.projectDescription,
-      structuralSystemSuggestion: designData.structuralSystemSuggestion,
-      columnCrossSection: designData.columnCrossSection,
-      beamCrossSection: designData.beamCrossSection,
-      foundationDesign: designData.foundationDesign,
-      deadLoad: designData.deadLoad,
-      liveLoad: designData.liveLoad,
-      windLoad: designData.windLoad,
-      seismicLoad: designData.seismicLoad,
+    const input = {
+      ...designData,
     };
 
     try {
-      const result = await simulateStructuralAnalysis(input);
-      onSimulationComplete(result);
-    } catch (error) {
+        const response = await fetch('/api/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(input),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to run simulation');
+        }
+
+        const result: StructuralSimulationOutput = await response.json();
+        onSimulationComplete(result);
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'فشلت المحاكاة',
-        description: 'حدث خطأ أثناء المحاكاة. يرجى المحاولة مرة أخرى.',
+        description: error.message || 'حدث خطأ أثناء المحاكاة. يرجى المحاولة مرة أخرى.',
       });
     } finally {
       setLoading(false);

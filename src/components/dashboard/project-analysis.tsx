@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +23,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import type { AnalysisStatus } from './main-dashboard';
 
+export interface ProjectPreliminaryAnalysis {
+    projectDescription: string;
+    projectLocation: string;
+    suggestedStructuralSystem: string;
+    applicableBuildingCodes: string;
+    executionMethod: string;
+    potentialChallenges: string;
+    keyFocusAreas: string;
+    academicReferences: {
+        title: string;
+        authors: string;
+        note: string;
+        searchLink: string;
+    }[];
+}
+
 const FormSchema = z.object({
   projectDescription: z.string().min(10, 'يرجى تقديم وصف لا يقل عن 10 أحرف.'),
 });
@@ -33,7 +48,7 @@ type FormValues = z.infer<typeof FormSchema>;
 interface ProjectAnalysisProps {
   onAnalysisStart: (description: string, location: string) => void;
   onAnalysisUpdate: (
-    data: Partial<SuggestStructuralSystemAndCodesOutput>
+    data: ProjectPreliminaryAnalysis
   ) => void;
   onStatusUpdate: (status: AnalysisStatus) => void;
   onError: (error: string) => void;
@@ -81,7 +96,11 @@ export default function ProjectAnalysis({
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectDescription: data.projectDescription, projectLocation: '' }),
+        body: JSON.stringify({ 
+            projectDescription: data.projectDescription, 
+            projectLocation: '',
+            analysisType: 'preliminary' 
+        }),
       });
 
       if (!response.ok) {
@@ -91,7 +110,7 @@ export default function ProjectAnalysis({
 
       const result = await response.json();
 
-      onAnalysisUpdate(result);
+      onAnalysisUpdate({ ...result, ...data });
 
       const finalStatus: AnalysisStatus = {
         structuralSystem: 'complete',

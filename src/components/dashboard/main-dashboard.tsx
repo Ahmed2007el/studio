@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import type { SuggestStructuralSystemAndCodesOutput } from '@/ai/flows/project-type-and-code-suggestion';
 import { useState, useEffect } from 'react';
 import ProjectAnalysis from './project-analysis';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -38,12 +37,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preliminary-designs';
-import type { SimulateStructuralAnalysisOutput } from '@/ai/flows/simulate-structural-analysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ConceptualDesign from './conceptual-design';
-import StructuralSimulation from './structural-simulation';
+import ConceptualDesign, { type ConceptualDesignOutput } from './conceptual-design';
+import StructuralSimulation, { type StructuralSimulationOutput } from './structural-simulation';
 import ThreeDViewer from './three-d-viewer';
+import type { ProjectPreliminaryAnalysis } from './project-analysis';
 
 
 export type AnalysisStep =
@@ -58,13 +56,11 @@ export type AnalysisStatus = {
   [key in AnalysisStep]: 'pending' | 'loading' | 'complete';
 };
 
-export type ProjectAnalysisData = Partial<SuggestStructuralSystemAndCodesOutput> & {
+export type ProjectAnalysisData = ProjectPreliminaryAnalysis & {
   id: string;
-  projectDescription: string;
-  projectLocation: string;
   timestamp: string;
-  conceptualDesign: GeneratePreliminaryDesignsOutput | null;
-  structuralSimulation: SimulateStructuralAnalysisOutput | null;
+  conceptualDesign: ConceptualDesignOutput | null;
+  structuralSimulation: StructuralSimulationOutput | null;
 };
 
 export default function MainDashboard() {
@@ -108,7 +104,7 @@ export default function MainDashboard() {
 
   const handleAnalysisStart = (description: string, location: string) => {
     setError(null);
-    const newAnalysis: ProjectAnalysisData = {
+    const newAnalysis: Omit<ProjectAnalysisData, keyof ProjectPreliminaryAnalysis> & Partial<ProjectPreliminaryAnalysis> = {
       id: Date.now().toString(),
       projectDescription: description,
       projectLocation: location,
@@ -116,20 +112,20 @@ export default function MainDashboard() {
       conceptualDesign: null,
       structuralSimulation: null
     };
-    setCurrentAnalysis(newAnalysis);
+    setCurrentAnalysis(newAnalysis as ProjectAnalysisData);
     setAnalysisStatus({
       structuralSystem: 'loading',
-      buildingCodes: 'pending',
-      executionMethod: 'pending',
-      potentialChallenges: 'pending',
-      keyFocusAreas: 'pending',
-      academicReferences: 'pending',
+      buildingCodes: 'loading',
+      executionMethod: 'loading',
+      potentialChallenges: 'loading',
+      keyFocusAreas: 'loading',
+      academicReferences: 'loading',
     });
     setView('analysis_progress');
   };
 
   const handleAnalysisUpdate = (
-    data: Partial<SuggestStructuralSystemAndCodesOutput>
+    data: ProjectPreliminaryAnalysis
   ) => {
     setCurrentAnalysis((prev) => {
       if (!prev) return null;
@@ -176,7 +172,7 @@ export default function MainDashboard() {
 
   const handleDataUpdate = <T extends 'conceptualDesign' | 'structuralSimulation'>(
     field: T,
-    data: ProjectAnalysisData[T]
+    data: NonNullable<ProjectAnalysisData[T]>
   ) => {
     setCurrentAnalysis(prev => {
         if (!prev) return null;

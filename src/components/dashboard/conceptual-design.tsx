@@ -1,10 +1,5 @@
 'use client';
 
-import {
-  generatePreliminaryDesigns,
-  type GeneratePreliminaryDesignsOutput,
-  type GeneratePreliminaryDesignsInput,
-} from '@/ai/flows/generate-preliminary-designs';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,6 +32,21 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '../ui/skeleton';
 
+// This matches the expected output from the new API structure
+export interface ConceptualDesignOutput {
+    structuralSystemSuggestion: string;
+    columnCrossSection: string;
+    beamCrossSection: string;
+    foundationDesign: string;
+    deadLoad: string;
+    liveLoad: string;
+    windLoad: string;
+    seismicLoad: string;
+    columnWidth?: number;
+    columnHeight?: number;
+}
+  
+
 const FormSchema = z.object({
   buildingCode: z.enum(['ACI', 'BS', 'UPC']),
 });
@@ -50,8 +60,8 @@ interface ConceptualDesignProps {
     suggestedStructuralSystem: string;
     applicableBuildingCodes: string;
   };
-  onDesignComplete: (data: GeneratePreliminaryDesignsOutput) => void;
-  initialData: GeneratePreliminaryDesignsOutput | null;
+  onDesignComplete: (data: ConceptualDesignOutput) => void;
+  initialData: ConceptualDesignOutput | null;
 }
 
 export default function ConceptualDesign({
@@ -79,20 +89,34 @@ export default function ConceptualDesign({
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     setLoading(true);
-    const input: GeneratePreliminaryDesignsInput = {
+    const input = {
       projectDescription: projectAnalysis.projectDescription,
       location: projectAnalysis.projectLocation,
       buildingCode: data.buildingCode,
     };
     try {
-      const result = await generatePreliminaryDesigns(input);
-      onDesignComplete(result);
-    } catch (error) {
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                ...input, 
+                analysisType: 'conceptualDesign' 
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to generate design');
+        }
+
+        const result: ConceptualDesignOutput = await response.json();
+        onDesignComplete(result);
+    } catch (error: any) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'فشل إنشاء التصميم',
-        description: 'حدث خطأ أثناء إنشاء التصميم. يرجى المحاولة مرة أخرى.',
+        description: error.message || 'حدث خطأ أثناء إنشاء التصميم. يرجى المحاولة مرة أخرى.',
       });
     } finally {
       setLoading(false);
@@ -178,7 +202,7 @@ function ResultCard({ title, value, loading }: { title: string; value?: string; 
           {loading && !value ? (
             <Skeleton className="h-6 w-3/4" />
           ) : (
-            <p className="text-lg font-bold">{value}</p>
+            <p className="text-lg font-bold">{value || 'غير متوفر'}</p>
           )}
         </CardContent>
       </Card>
