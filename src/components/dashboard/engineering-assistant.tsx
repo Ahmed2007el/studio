@@ -183,8 +183,13 @@ export default function EngineeringAssistant({
             };
             setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
         } else {
-            // Handle empty audio gracefully (e.g., quota exceeded)
-            throw new Error("TTS generation returned empty audio.");
+            // Handle empty audio gracefully by setting an error state on the message
+            const messageWithError: Message = {
+                ...assistantMessage,
+                audioLoading: false,
+                audioError: true,
+            };
+            setMessages(prev => prev.map((msg, i) => i === newMessages.length ? messageWithError : msg));
         }
       } catch (ttsError) {
           console.error("TTS generation failed:", ttsError);
@@ -302,5 +307,3 @@ export default function EngineeringAssistant({
     </Card>
   );
 }
-
-    
