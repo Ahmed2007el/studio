@@ -25,7 +25,7 @@ async function handlePreliminaryAnalysis(projectDescription: string, projectLoca
         ]
     };
 
-    const prompt = `You are a highly experienced Principal Structural Engineer with 30 years of expertise in designing complex structures worldwide. Your task is to provide a comprehensive and highly detailed preliminary analysis for a new project. Your response must be in clear, professional, and well-structured Arabic.
+    const prompt = `You are a highly experienced Principal Structural Engineer and consultant with 30 years of expertise in designing complex structures worldwide. Your task is to provide a comprehensive, highly detailed, and technically precise preliminary analysis for a new project. Your response must be in clear, professional, and well-structured Arabic.
 
     **Project Description:**
     ${projectDescription}
@@ -36,32 +36,33 @@ async function handlePreliminaryAnalysis(projectDescription: string, projectLoca
     **Your Detailed Analysis Must Include:**
 
     1.  **Suggested Structural System:**
-        *   Propose the most suitable structural system (e.g., Moment Resisting Frame, Shear Wall System, etc.).
-        *   Provide a **detailed justification** for your choice, considering factors like building height, soil conditions (assume typical for the location if not specified), seismicity, and architectural requirements.
-        *   Explain the advantages and disadvantages of this system for this specific project.
+        *   Propose at least two viable structural systems (e.g., Moment Resisting Frame, Shear Wall System, etc.).
+        *   Conduct a comparative analysis of these systems.
+        *   Recommend the most suitable system and provide a **detailed technical justification** for your choice, considering factors like soil conditions (assume typical for the location), seismicity, wind loads, architectural requirements, cost-effectiveness, and constructability.
+        *   Explain the key advantages and disadvantages of the recommended system for this specific project.
 
     2.  **Applicable Building Codes:**
         *   List all relevant national and international building codes (e.g., SBC, ASCE 7, ACI 318, Eurocode).
-        *   For each code, mention the **specific chapters or sections** that are most critical for this project (e.g., "SBC 301 for loads," "ACI 318 Chapter 18 for seismic design").
+        *   For each code, identify the **most critical chapters and sections** and briefly explain *why* they are critical to this project (e.g., "SBC 301 for load combinations," "ACI 318 Chapter 18 for seismic detailing of beam-column joints").
 
     3.  **Execution Method:**
         *   Describe the optimal construction methodology in detail (e.g., cast-in-situ, precast, top-down construction).
-        *   Justify your choice based on project scale, timeline, and local construction practices.
-        *   List the key machinery and equipment required.
+        *   Justify your choice based on project scale, timeline, local construction practices, and quality control requirements.
+        *   List the key machinery and specialized equipment required for your proposed method.
 
     4.  **Potential Challenges:**
-        *   Identify at least 3-4 significant potential challenges (e.g., complex formwork, dewatering, long-span beams).
-        *   For each challenge, provide a detailed explanation of why it's a risk and suggest a proactive mitigation strategy.
+        *   Identify at least 3-4 significant potential challenges (e.g., complex formwork, dewatering, long-span beams, soil-structure interaction).
+        *   For each challenge, provide a detailed explanation of the risk, assess its risk level (High, Medium, Low), and propose a proactive and specific mitigation strategy.
 
-    5.  **Key Focus Areas:**
-        *   Identify at least 3-4 critical areas that require special attention during the design and construction phases (e.g., foundation-soil interaction, slab deflection control, seismic detailing).
-        *   Explain the importance of each focus area in detail.
+    5.  **Key Focus Areas for Detailed Design:**
+        *   Identify at least 3-4 critical areas that require special attention during the detailed design phase (e.g., foundation settlement analysis, slab deflection control, seismic detailing for ductility, connection design).
+        *   Explain the importance of each focus area in detail and the potential consequences of neglecting it.
 
     6.  **Academic References:**
-        *   List at least 3 highly relevant and modern academic papers or textbooks.
-        *   For each reference, provide the title, authors, a brief note on its relevance, and a valid Google search URL in the format 'https://www.google.com/search?q=...'.
+        *   List at least 3 highly relevant and modern academic papers, textbooks, or design guides.
+        *   For each reference, provide the title, authors, a brief note on its specific relevance to the project's challenges, and a valid Google search URL.
 
-    Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
+    Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content. Do not leave any fields empty.
     ${JSON.stringify(outputSchema, null, 2)}
     `;
 
@@ -93,28 +94,28 @@ async function handleConceptualDesign(input: any) {
         columnHeight: "number (height of column in cm)",
       };
     
-      const prompt = `You are an expert Principal Structural Engineer. Based on the following project details, generate a detailed conceptual design. Your response must be in clear, professional, and well-structured Arabic.
-    
+      const prompt = `You are an expert Principal Structural Engineer. Based on the following project details, generate a detailed conceptual design. Your response must be in clear, professional, and well-structured Arabic. Your estimations must be based on sound engineering principles and the specified building code.
+
       **Project & Analysis Data:**
       *   Project Description: ${input.projectDescription}
       *   Location: ${input.location}
       *   Selected Building Code: ${input.buildingCode}
     
       **Your Task:**
-      Generate the conceptual design details. Provide a detailed, justified response for ALL of the following sections. The estimations should be based on sound engineering principles and the selected building code.
+      Generate the conceptual design details. Provide a detailed, justified response for ALL of the following sections.
 
-      1.  **Structural System Suggestion:** Refine or confirm the structural system choice with a brief justification.
-      2.  **Column Cross Section:** Suggest a typical preliminary column size. Justify your choice based on estimated axial loads and architectural considerations.
-      3.  **Beam Cross Section:** Suggest a typical preliminary beam size. Justify based on typical spans and loads.
-      4.  **Foundation Design:** Suggest a suitable foundation system. State any assumptions made (e.g., assumed soil bearing capacity).
-      5.  **Dead Load (DL):** Estimate the superimposed dead load (Flooring, partitions, MEP) and self-weight of typical elements to arrive at a total dead load per unit area. Show a brief breakdown.
-      6.  **Live Load (LL):** Estimate the live load according to the specified building code for the assumed occupancy (e.g., residential, office). Cite the code category if possible.
-      7.  **Wind Load (WL):** Estimate the basic wind load parameters based on the project's location and height.
-      8.  **Seismic Load (EL):** Estimate the key seismic parameters (e.g., Seismic Zone, Importance Factor, and spectral acceleration parameters like SDS/SD1) based on the selected code and location.
+      1.  **Structural System Suggestion:** Refine or confirm the structural system choice with a brief technical justification.
+      2.  **Column Cross Section:** Suggest a typical preliminary column size (e.g., '600x600 mm'). Justify your choice based on estimated axial loads from tributary area calculations and architectural considerations. State your assumptions.
+      3.  **Beam Cross Section:** Suggest a typical preliminary beam size (e.g., '300x700 mm'). Justify based on typical spans (assume 6-8m if not specified) and preliminary load estimations.
+      4.  **Foundation Design:** Suggest a suitable foundation system (e.g., Raft, Isolated Footings). State your assumptions clearly (e.g., "Assumed soil bearing capacity of 150 kPa").
+      5.  **Dead Load (DL):** Provide a numerical estimate for the superimposed dead load (finishes, partitions, MEP) and the self-weight of typical elements to arrive at a total dead load per unit area (in kN/m²). Show a brief, clear breakdown of your calculation (e.g., Flooring: X, Partitions: Y, MEP: Z, Self-weight: A).
+      6.  **Live Load (LL):** Provide a numerical estimate for the live load (in kN/m²) according to the specified building code for the assumed occupancy (e.g., residential, office). Cite the specific code category or table if possible (e.g., "ASCE 7-16 Table 4.3-1, Residential Areas").
+      7.  **Wind Load (WL):** Estimate the basic wind pressure (in kPa) based on the project's location and assumed height. Mention the parameters used (e.g., "Basic wind speed V, Exposure category C").
+      8.  **Seismic Load (EL):** Estimate the key seismic design parameters based on the selected code and location. Include Seismic Zone/Design Category, Importance Factor (I), and spectral acceleration parameters (SDS, SD1).
       9.  **Column Width:** Extract the numerical width of the column in centimeters.
       10. **Column Height:** Extract the numerical height (depth) of the column in centimeters.
     
-      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
+      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content.
       ${JSON.stringify(outputSchema, null, 2)}
       `;
 

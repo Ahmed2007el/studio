@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
         ]
       };
       
-      const prompt = `You are an expert structural analyst performing a simplified, yet realistic, structural analysis based on the provided conceptual design data. Your response must be in clear, professional, and well-structured Arabic.
-      
+      const prompt = `You are an expert structural analyst performing a simplified, yet realistic, structural analysis simulation based on the provided conceptual design data. Your response must be in clear, professional, and well-structured Arabic. The numerical results should be plausible engineering estimates.
+
       **Project & Conceptual Design Data:**
       - Project Description: ${input.projectDescription}
       - Structural System: ${input.structuralSystemSuggestion}
@@ -44,18 +44,18 @@ export async function POST(req: NextRequest) {
       - Seismic Load: ${input.seismicLoad}
       
       **Task:**
-      Perform a conceptual structural analysis. The estimations should be realistic and reflect the principles of structural mechanics.
+      Perform a conceptual structural analysis simulation. The estimations must be realistic and reflect the principles of structural mechanics based on the inputs.
 
-      1.  **Summary:**
-          *   Provide a **detailed summary** of the analysis.
-          *   Highlight the elements subjected to the most critical forces.
-          *   Mention any potential concerns, such as high shear forces in beams or high bending moments in columns, and suggest what to look out for in the detailed design phase.
+      1.  **Summary of Simulation:**
+          *   Provide a **detailed technical summary** of the analysis results.
+          *   Highlight the elements subjected to the most critical forces (e.g., "The ground floor columns experience high axial loads combined with bending," "The 8m-span beams show significant shear forces near the supports").
+          *   Mention potential concerns and provide specific, actionable recommendations for the detailed design phase. (e.g., "High shear in beams may require shear reinforcement," "Check punching shear at column-slab connections.").
 
-      2.  **Analysis Results:**
-          *   Fill out the **analysisResults** array with your estimated maximum forces (Moment, Shear, Axial) for at least two representative critical elements (e.g., a ground-floor corner column and a first-floor long-span beam).
-          *   The values should be realistic estimations based on the provided loads, dimensions, and standard engineering approximation methods.
+      2.  **Simulated Analysis Results:**
+          *   Fill out the **analysisResults** array with your estimated maximum internal forces (Moment, Shear, Axial) for at least two representative critical elements. Choose one column and one beam.
+          *   The values should be realistic estimations based on the provided loads, dimensions, and standard engineering approximation methods (e.g., tributary area for columns, WL^2/8 for beams). Do not provide placeholder values; calculate plausible numbers.
       
-      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content:
+      Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content.
       ${JSON.stringify(outputSchema, null, 2)}
       `;
       
