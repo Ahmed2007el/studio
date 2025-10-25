@@ -48,12 +48,12 @@ export async function POST(req: NextRequest) {
 
       1.  **Summary of Simulation:**
           *   Provide a **detailed technical summary** of the analysis results.
-          *   Highlight the elements subjected to the most critical forces (e.g., "The ground floor columns experience high axial loads combined with bending," "The 8m-span beams show significant shear forces near the supports").
-          *   Mention potential concerns and provide specific, actionable recommendations for the detailed design phase. (e.g., "High shear in beams may require shear reinforcement," "Check punching shear at column-slab connections.").
+          *   Highlight the elements subjected to the most critical forces (e.g., "The ground floor columns experience high axial loads combined with significant bending moments due to their position," "The 8m-span beams show high shear forces near the supports, approaching the section's capacity").
+          *   Mention potential concerns and provide specific, actionable recommendations for the detailed design phase. (e.g., "High shear in long-span beams requires careful shear reinforcement design," "The analysis indicates potential punching shear issues at column-slab connections, which must be verified with detailed calculations.").
 
       2.  **Simulated Analysis Results:**
-          *   Fill out the **analysisResults** array with your estimated maximum internal forces (Moment, Shear, Axial) for at least two representative critical elements. Choose one column and one beam.
-          *   The values should be realistic estimations based on the provided loads, dimensions, and standard engineering approximation methods (e.g., tributary area for columns, WL^2/8 for beams). Do not provide placeholder values; calculate plausible numbers.
+          *   Fill out the **analysisResults** array with your estimated maximum internal forces (Moment, Shear, Axial) for at least two representative critical elements. Choose one column and one beam that are likely to be highly stressed.
+          *   The values should be realistic estimations based on the provided loads, dimensions, and standard engineering approximation methods (e.g., tributary area for columns, WL^2/8 for beams). Do not provide placeholder values; calculate plausible numbers that an engineer would expect to see.
       
       Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content.
       ${JSON.stringify(outputSchema, null, 2)}

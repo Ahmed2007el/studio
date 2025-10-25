@@ -13,8 +13,8 @@ async function handlePreliminaryAnalysis(projectDescription: string, projectLoca
         suggestedStructuralSystem: "string (Detailed explanation and justification)",
         applicableBuildingCodes: "string (List of codes with specific relevant chapters or sections)",
         executionMethod: "string (Detailed description of the methodology and machinery)",
-        potentialChallenges: "string (Bulleted list with detailed explanation for each challenge)",
-        keyFocusAreas: "string (Bulleted list with detailed explanation for each area)",
+        potentialChallenges: "string (Bulleted list with detailed explanation for each challenge, including risk level and mitigation strategies)",
+        keyFocusAreas: "string (Bulleted list with detailed explanation for each area, including consequences of neglect)",
         academicReferences: [
           {
             title: "string",
@@ -37,30 +37,29 @@ async function handlePreliminaryAnalysis(projectDescription: string, projectLoca
 
     1.  **Suggested Structural System:**
         *   Propose at least two viable structural systems (e.g., Moment Resisting Frame, Shear Wall System, etc.).
-        *   Conduct a comparative analysis of these systems.
-        *   Recommend the most suitable system and provide a **detailed technical justification** for your choice, considering factors like soil conditions (assume typical for the location), seismicity, wind loads, architectural requirements, cost-effectiveness, and constructability.
-        *   Explain the key advantages and disadvantages of the recommended system for this specific project.
+        *   Conduct a detailed comparative analysis of these systems, evaluating them against criteria like soil conditions (assume typical for the location unless specified), seismicity, wind loads, architectural requirements, cost-effectiveness, and constructability.
+        *   Recommend the most suitable system and provide an in-depth **technical justification** for your choice, explaining the key advantages and disadvantages of the recommended system for this specific project.
 
     2.  **Applicable Building Codes:**
         *   List all relevant national and international building codes (e.g., SBC, ASCE 7, ACI 318, Eurocode).
-        *   For each code, identify the **most critical chapters and sections** and briefly explain *why* they are critical to this project (e.g., "SBC 301 for load combinations," "ACI 318 Chapter 18 for seismic detailing of beam-column joints").
+        *   For each code, identify the **most critical chapters and sections** and explain in detail *why* they are critical to this project (e.g., "SBC 301 for precise load combinations required for this type of structure," "ACI 318 Chapter 18 because the project is in a seismic zone and requires specific detailing for beam-column joints to ensure ductility").
 
     3.  **Execution Method:**
         *   Describe the optimal construction methodology in detail (e.g., cast-in-situ, precast, top-down construction).
-        *   Justify your choice based on project scale, timeline, local construction practices, and quality control requirements.
+        *   Justify your choice thoroughly based on project scale, timeline, local construction practices, and quality control requirements.
         *   List the key machinery and specialized equipment required for your proposed method.
 
     4.  **Potential Challenges:**
-        *   Identify at least 3-4 significant potential challenges (e.g., complex formwork, dewatering, long-span beams, soil-structure interaction).
-        *   For each challenge, provide a detailed explanation of the risk, assess its risk level (High, Medium, Low), and propose a proactive and specific mitigation strategy.
+        *   Identify at least 4-5 significant potential challenges (e.g., complex formwork, dewatering, long-span beams, soil-structure interaction, thermal effects).
+        *   For each challenge, provide a detailed explanation of the risk, assess its risk level (High, Medium, Low), and propose a proactive, specific, and actionable mitigation strategy. For instance: "Challenge: Deep excavation adjacent to existing structures. Risk: High. Mitigation: Implement a contiguous pile wall with tie-back anchors, combined with a real-time monitoring system for adjacent structures."
 
     5.  **Key Focus Areas for Detailed Design:**
-        *   Identify at least 3-4 critical areas that require special attention during the detailed design phase (e.g., foundation settlement analysis, slab deflection control, seismic detailing for ductility, connection design).
-        *   Explain the importance of each focus area in detail and the potential consequences of neglecting it.
+        *   Identify at least 4-5 critical areas that require special attention during the detailed design phase (e.g., foundation settlement analysis, dynamic response to wind, punching shear in flat slabs, seismic detailing for ductility, connection design).
+        *   Explain the importance of each focus area in detail and describe the potential negative consequences of neglecting it (e.g., "Focus Area: Slab Deflection Control. Consequence of Neglect: Excessive deflection can lead to damage in non-structural elements like partitions and facades, and may cause user discomfort.").
 
     6.  **Academic References:**
         *   List at least 3 highly relevant and modern academic papers, textbooks, or design guides.
-        *   For each reference, provide the title, authors, a brief note on its specific relevance to the project's challenges, and a valid Google search URL.
+        *   For each reference, provide the title, authors, a brief but specific note on its relevance to the project's challenges (e.g., "This book provides an excellent chapter on the design of post-tensioned slabs, which is relevant to achieving the long spans in this project"), and a valid Google search URL.
 
     Your output MUST be a valid JSON object strictly matching this schema. Ensure all fields are filled with detailed, expert-level content. Do not leave any fields empty.
     ${JSON.stringify(outputSchema, null, 2)}
@@ -105,7 +104,7 @@ async function handleConceptualDesign(input: any) {
       Generate the conceptual design details. Provide a detailed, justified response for ALL of the following sections.
 
       1.  **Structural System Suggestion:** Refine or confirm the structural system choice with a brief technical justification.
-      2.  **Column Cross Section:** Suggest a typical preliminary column size (e.g., '600x600 mm'). Justify your choice based on estimated axial loads from tributary area calculations and architectural considerations. State your assumptions.
+      2.  **Column Cross Section:** Suggest a typical preliminary column size (e.g., '600x600 mm'). Justify your choice based on estimated axial loads from tributary area calculations and architectural considerations. State your assumptions clearly.
       3.  **Beam Cross Section:** Suggest a typical preliminary beam size (e.g., '300x700 mm'). Justify based on typical spans (assume 6-8m if not specified) and preliminary load estimations.
       4.  **Foundation Design:** Suggest a suitable foundation system (e.g., Raft, Isolated Footings). State your assumptions clearly (e.g., "Assumed soil bearing capacity of 150 kPa").
       5.  **Dead Load (DL):** Provide a numerical estimate for the superimposed dead load (finishes, partitions, MEP) and the self-weight of typical elements to arrive at a total dead load per unit area (in kN/m²). Show a brief, clear breakdown of your calculation (e.g., Flooring: X, Partitions: Y, MEP: Z, Self-weight: A).
