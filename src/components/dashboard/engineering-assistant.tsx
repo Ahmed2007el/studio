@@ -1,23 +1,25 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { ScrollArea } from '../ui/scroll-area';
-import { Loader2, Sparkles, User, Mic } from 'lucide-react';
+import { Loader2, Sparkles, User, Mic, Play, Pause, Volume2 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import { textToSpeech, TextToSpeechOutput } from '@/ai/flows/text-to-speech';
 
 interface Message {
   role: 'user' | 'model';
   content: string;
+  audioUrl?: string;
+  audioError?: boolean;
 }
 
 interface EngineeringAssistantProps {
   projectContext: any;
 }
 
-// Extend window type for webkitSpeechRecognition
 declare global {
   interface Window {
     SpeechRecognition: typeof SpeechRecognition;
@@ -33,8 +35,11 @@ export default function EngineeringAssistant({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
+
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
 
   useEffect(() => {
@@ -54,31 +59,45 @@ export default function EngineeringAssistant({
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
-      recognition.lang = 'ar-SA'; // Set language to Arabic
+      recognition.lang = 'ar-SA';
       recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-        handleSend(transcript); // Automatically send after transcription
-      };
-
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
       recognition.onerror = (event) => {
         console.error('Speech recognition error', event.error);
         setIsListening(false);
+      };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        handleSend(transcript);
       };
       
       recognitionRef.current = recognition;
     }
   }, []);
+  
+  const handlePlayAudio = useCallback((url: string) => {
+    if (activeAudio) {
+      activeAudio.pause();
+    }
+    const newAudio = new Audio(url);
+    newAudio.play();
+    setActiveAudio(newAudio);
+  }, [activeAudio]);
+
+  // Auto-play effect
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === 'model' && lastMessage.audioUrl && !lastMessage.audioError) {
+        // A short delay to ensure the UI has updated
+        setTimeout(() => {
+            handlePlayAudio(lastMessage.audioUrl!);
+        }, 100);
+    }
+  }, [messages, handlePlayAudio]);
+
 
   const handleVoiceInput = () => {
     if (recognitionRef.current) {
@@ -93,7 +112,6 @@ export default function EngineeringAssistant({
     }
   };
 
-
   const handleSend = async (textToSend?: string) => {
     const messageText = typeof textToSend === 'string' ? textToSend : input;
     if (!messageText.trim()) return;
@@ -104,21 +122,14 @@ export default function EngineeringAssistant({
     setInput('');
     setLoading(true);
     
-    // Add a placeholder for the model's response
     const modelMessagePlaceholder: Message = { role: 'model', content: '' };
     setMessages([...newMessages, modelMessagePlaceholder]);
-
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectContext,
-          history: newMessages,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectContext, history: newMessages }),
       });
 
       if (!response.ok) {
@@ -127,13 +138,25 @@ export default function EngineeringAssistant({
       }
 
       const result = await response.json();
+      const assistantMessage: Message = { role: 'model', content: result.reply };
 
-      const assistantMessage: Message = {
-        role: 'model',
-        content: result.reply,
-      };
+      try {
+        const ttsResponse: any = await textToSpeech({ text: result.reply });
+        // The flow now returns { media: 'data:...' } on success
+        const audioDataUri = ttsResponse.media || ttsResponse.audio;
 
-      // Update the placeholder with the actual content
+        if (audioDataUri) {
+          assistantMessage.audioUrl = audioDataUri;
+        } else {
+            // Handle empty audio gracefully (e.g., quota exceeded)
+            console.warn("TTS generation returned empty audio. Disabling audio for this message.");
+            assistantMessage.audioError = true;
+        }
+      } catch (ttsError) {
+          console.error("TTS generation failed:", ttsError);
+          assistantMessage.audioError = true;
+      }
+      
       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? assistantMessage : msg));
 
     } catch (error: any) {
@@ -141,9 +164,9 @@ export default function EngineeringAssistant({
       const errorMessage: Message = {
         role: 'model',
         content: `عذراً، لقد واجهت خطأ: ${error.message}`,
+        audioError: true,
       };
-       // Update the placeholder with the error message
-       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? errorMessage : msg));
+      setMessages(prev => prev.map((msg, i) => i === newMessages.length ? errorMessage : msg));
     } finally {
       setLoading(false);
     }
@@ -156,7 +179,7 @@ export default function EngineeringAssistant({
             المهندس المساعد
           </CardTitle>
           <CardDescription>
-            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام. (يعمل الآن بواسطة openai/gpt-3.5-turbo)
+            اطرح أي سؤال حول مشروعك أو عن الهندسة المدنية بشكل عام.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 p-4 min-h-0">
@@ -187,6 +210,16 @@ export default function EngineeringAssistant({
                       <p className="text-sm">{message.content}</p>
                     ) : (
                       <Loader2 className="animate-spin text-primary" />
+                    )}
+                     {message.role === 'model' && message.audioUrl && !message.audioError && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handlePlayAudio(message.audioUrl!)}
+                            className="absolute -bottom-4 -left-4 h-8 w-8 rounded-full bg-primary/20 text-primary hover:bg-primary/30"
+                        >
+                            <Volume2 className="h-4 w-4" />
+                        </Button>
                     )}
                   </div>
                   {message.role === 'user' && (
