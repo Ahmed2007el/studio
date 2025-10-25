@@ -10,13 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { GeneratePreliminaryDesignsOutput } from '@/ai/flows/generate-preliminary-designs';
+import type { ConceptualDesignOutput } from './conceptual-design';
 import { Button } from '../ui/button';
 import { RefreshCw } from 'lucide-react';
 
 
 interface ThreeDViewerProps {
-  designData: GeneratePreliminaryDesignsOutput | null;
+  designData: ConceptualDesignOutput | null;
 }
 
 export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
@@ -33,8 +33,8 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
 
     const cleanup = () => {
         cancelAnimationFrame(animationFrameId);
-        if (mount) {
-            mount.innerHTML = '';
+        if (renderer && mount && mount.contains(renderer.domElement)) {
+            mount.removeChild(renderer.domElement);
         }
         if (controls) {
             controls.dispose();
@@ -192,11 +192,6 @@ export default function ThreeDViewer({ designData }: ThreeDViewerProps) {
           ref={mountRef}
           className="h-[500px] w-full rounded-lg border bg-card"
         >
-        {!designData && (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-                <p>يرجى إكمال خطوة 'التصميم المبدئي' أولاً لعرض النموذج.</p>
-            </div>
-        )}
         </div>
       </CardContent>
       {designData && (
