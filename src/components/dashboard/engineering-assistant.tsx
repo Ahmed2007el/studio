@@ -183,6 +183,7 @@ export default function EngineeringAssistant({
             };
             setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
         } else {
+            // Handle empty audio gracefully (e.g., quota exceeded)
             throw new Error("TTS generation returned empty audio.");
         }
       } catch (ttsError) {
@@ -301,3 +302,5 @@ export default function EngineeringAssistant({
     </Card>
   );
 }
+
+    
