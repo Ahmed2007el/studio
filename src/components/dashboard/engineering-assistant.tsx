@@ -42,7 +42,7 @@ export default function EngineeringAssistant({
 
   const initializeRecognition = () => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = window.webkitSpeechRecognition;
       if (SpeechRecognition && !recognitionRef.current) {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
