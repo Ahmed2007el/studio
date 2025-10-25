@@ -14,6 +14,7 @@ interface Message {
   content: string;
   audioUrl?: string;
   audioLoading?: boolean;
+  audioError?: boolean;
 }
 
 interface EngineeringAssistantProps {
@@ -157,14 +158,23 @@ export default function EngineeringAssistant({
       setMessages(prev => prev.map((msg, i) => i === newMessages.length ? assistantMessage : msg));
 
       // Generate speech
-      const ttsResult = await textToSpeech({ text: result.reply });
-      const finalAssistantMessage: Message = {
-        ...assistantMessage,
-        audioUrl: ttsResult.audio,
-        audioLoading: false
-      };
-      
-      setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
+      try {
+        const ttsResult = await textToSpeech({ text: result.reply });
+        const finalAssistantMessage: Message = {
+            ...assistantMessage,
+            audioUrl: ttsResult.audio,
+            audioLoading: false
+        };
+        setMessages(prev => prev.map((msg, i) => i === newMessages.length ? finalAssistantMessage : msg));
+      } catch (ttsError) {
+          console.error("TTS generation failed:", ttsError);
+          const messageWithError: Message = {
+              ...assistantMessage,
+              audioLoading: false,
+              audioError: true,
+          };
+          setMessages(prev => prev.map((msg, i) => i === newMessages.length ? messageWithError : msg));
+      }
 
     } catch (error: any) {
       console.error(error);
@@ -223,7 +233,7 @@ export default function EngineeringAssistant({
                        <div className="absolute top-2 left-2 flex items-center gap-2">
                         {message.audioLoading ? (
                             <Loader2 className="animate-spin text-primary/50 h-4 w-4" />
-                        ) : message.audioUrl ? (
+                        ) : message.audioUrl && !message.audioError ? (
                           <>
                             <Button variant="ghost" size="icon" className="h-6 w-6 opacity-50 group-hover:opacity-100" onClick={() => handlePlayAudio(index)}>
                               <PlayCircle className="h-4 w-4" />
