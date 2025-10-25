@@ -63,9 +63,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({reply});
   } catch (error: any) {
     console.error('Error in chat API:', error);
-    const errorMessage = error.response ? await error.response.json() : { message: error.message };
+    // Improved error handling to capture the correct message
+    const errorMessage = error.response ? (await error.response.json()).error?.message : error.message;
     return NextResponse.json(
-      {error: errorMessage.error?.message || 'An unknown error occurred'},
+      {error: errorMessage || 'An unknown error occurred'},
       {status: 500}
     );
   }
