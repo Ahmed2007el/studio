@@ -6,7 +6,7 @@ const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const MODEL_NAME = 'google/gemini-1.5-pro-latest';
+const MODEL_NAME = 'google/gemini-1.5-pro';
 
 function buildSystemPrompt(projectContext: any): string {
   const context = `
@@ -63,11 +63,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({reply});
   } catch (error: any) {
     console.error('Error in chat API:', error);
-    // Improved error handling to capture the correct message
-    const errorMessage = error.response ? (await error.response.json()).error?.message : error.message;
+    // Improved error handling to capture the correct message from OpenAI-compatible APIs
+    const errorMessage = error.error?.message || error.message || 'An unknown error occurred';
     return NextResponse.json(
-      {error: errorMessage || 'An unknown error occurred'},
-      {status: 500}
+      {error: errorMessage},
+      {status: error.status || 500}
     );
   }
 }
